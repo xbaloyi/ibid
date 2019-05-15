@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2011, Michael Gorven, Stefano Rivera, Keegan Carruthers-Smith
+# Copyright (c) 2008-2010, Michael Gorven, Stefano Rivera
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
 from copy import copy
@@ -23,8 +23,7 @@ except ImportError:
             if not os.path.exists(os.path.join(x, *package + ['__init__.py']))]
 
 import ibid
-from ibid.compat import json, defaultdict
-from ibid.utils import url_regex
+from ibid.compat import json
 
 __path__ = pluginPackagePaths(__name__) + __path__
 
@@ -138,33 +137,14 @@ class Processor(object):
                 args = ()
             elif hasattr(event, 'message'):
                 found = True
-                message = event.message
-                if isinstance(message, dict):
-                    message = message[method.message_version]
-                match = method.pattern.search(message)
+                match = method.pattern.search(
+                        event.message[method.message_version])
                 if match is not None:
                     args = match.groups()
-                    kwargs = match.groupdict()
-                    if kwargs:
-                        assert len(args) == len(kwargs), (
-                            "Can't intermix named and positional arguments.")
-                        # Convert the names from the %s__%d_ format to %s
-                        args = {}
-                        for name, value in kwargs.iteritems():
-                            name = re.match(r'^(\S+?)(?:__\d+_)?$', name).group(1)
-                            if args.get(name, None) is None:
-                                args[name] = value
-                            else:
-                                assert value is None, (
-                                    'named argument %s was matched more '
-                                    'than once.' % name)
             if args is not None:
                 if (not getattr(method, 'auth_required', False)
                         or auth_responses(event, self.permission)):
-                    if isinstance(args, dict):
-                        method(event, **args)
-                    else:
-                        method(event, *args)
+                    method(event, *args)
                 elif not getattr(method, 'auth_fallthrough', True):
                     event.processed = True
 
@@ -230,49 +210,9 @@ def handler(function):
     function.message_version = 'clean'
     return function
 
-def _match_sub_selectors(regex):
-    selector_patterns = {
-        'alpha'   : r'[a-zA-Z]+',
-        'any'     : r'.+',
-        'chunk'   : r'\S+',
-        'digits'  : r'\d+',
-        'number'  : r'\d*\.?\d+',
-        'url'     : url_regex(),
-        'word'    : r'\w+',
-    }
-
-    regex = regex.replace(' ', r'(?:\s+)')
-
-    name_count = defaultdict(int)
-    def selector_to_re(match):
-        name    = match.group(1)
-        pattern = match.group(2)
-
-        if name is None:
-            return '(%s)' % selector_patterns[pattern]
-
-        # Prevent conflicts when reusing a name
-        name_count[name] += 1
-        name = '%s__%d_' % (name, name_count[name])
-
-        return '(?P<%s>%s)' % (name, selector_patterns[pattern])
-
-    regex = re.sub(r'{(?:(\w+):)?(%s)}' % '|'.join(selector_patterns.keys()),
-                   selector_to_re, regex)
-
-    if not regex.startswith('^'):
-        regex = '^' + regex
-    if not regex.endswith('$'):
-        regex = regex + '$'
-
-    return regex
-
-def match(regex, version='clean', simple=True):
+def match(regex, version='clean'):
     "Wrapper: Handle all events where the message matches the regex"
-    if simple:
-        regex = _match_sub_selectors(regex)
-
-    pattern = re.compile(regex, re.I | re.UNICODE | re.DOTALL)
+    pattern = re.compile(regex, re.I | re.DOTALL)
     def wrap(function):
         function.handler = True
         function.pattern = pattern
@@ -324,7 +264,7 @@ class RPC(pb.Referenceable, resource.Resource):
     isLeaf = True
 
     def __init__(self):
-        ibid.rpc[self.features[0]] = self
+        ibid.rpc[self.feature[0]] = self
         self.form = templates.get_template('plugin_form.html')
         self.list = templates.get_template('plugin_functions.html')
 
@@ -371,7 +311,7 @@ class RPC(pb.Referenceable, resource.Resource):
                 if name.startswith('remote_'):
                     functions.append(name.replace('remote_', '', 1))
 
-            return self.list.render(object=self.features[0], functions=functions) \
+            return self.list.render(object=self.feature[0], functions=functions) \
                     .encode('utf-8')
 
         args, varargs, varkw, defaults = getargspec(function)

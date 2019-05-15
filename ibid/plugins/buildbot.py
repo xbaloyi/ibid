@@ -15,7 +15,7 @@ features = {'buildbot': {
 }}
 class BuildBot(Processor, RPC):
     usage = u'rebuild <branch> [ (revision|r) <number> ]'
-    features = ('buildbot',)
+    feature = ('buildbot',)
     autoload = False
 
     server = Option('server', 'Buildbot server hostname', 'localhost')

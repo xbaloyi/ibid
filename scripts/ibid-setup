@@ -2,12 +2,12 @@
 # Copyright (c) 2008-2010, Michael Gorven, Stefano Rivera
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
-from locale import getpreferredencoding
 import logging
 from optparse import OptionParser
 import sys
 from sys import exit, stderr
 from getpass import getpass
+from os import getenv
 from os.path import exists
 from shutil import copyfileobj
 
@@ -34,7 +34,10 @@ if options.verbose:
 else:
     logging.basicConfig(level=logging.INFO)
 
-encoding = getpreferredencoding()
+try:
+    encoding = getenv("LANG").split(".")[1]
+except:
+    encoding = "ascii"
 
 def prompt(prompt, secret=False):
     if secret:
@@ -104,7 +107,6 @@ source like 'jabber'.
             source['channels'] = [c.strip() for c in channels.split(u',')]
         source['auth'] = ['hostmask', 'nickserv']
     elif type_ == u'jabber':
-        source['type'] = u'jabber'
         source['jid'] = prompt(u'JID (Jabber address): ')
         source['password'] = prompt(u'Password: ', secret=True)
         rooms = prompt(
@@ -123,7 +125,7 @@ source like 'jabber'.
         copyfileobj(resource_stream('ibid', 'logging.ini'),
                     open('logging.ini', 'w'))
 
-db = DatabaseManager(check_schema_versions=False, sqlite_synchronous=False)
+db = DatabaseManager(check_schema_versions=False)
 Session = db['ibid']
 upgrade_schemas(Session)
 
@@ -151,15 +153,15 @@ account.identities.append(identity)
 
 for permission in (u'accounts', u'sources', u'plugins', u'core', u'admin',
     u'config', u'saydo', u'factoidadmin', u'karmaadmin', u'eval',
-    u'chairmeeting', u'nmap', u'regex', u'debug'):
+    u'chairmeeting', u'nmap', u'regex'):
     perm = Permission(permission, u'auth')
     account.permissions.append(perm)
 
 credential = Credential(u'password', hash(unicode(pass1)))
 account.credentials.append(credential)
 
-session.add(account)
-session.add(identity)
+session.save_or_update(account)
+session.save_or_update(identity)
 session.commit()
 session.close()
 

@@ -1,0 +1,275 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ibid.event – Events &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="ibid.plugins – Plugin registration" href="ibid.plugins.html" />
+    <link rel="prev" title="ibid.core – Ibid Core" href="ibid.core.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="ibid.plugins.html" title="ibid.plugins – Plugin registration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ibid.core.html" title="ibid.core – Ibid Core"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-ibid.event">
+<h1><tt class="xref docutils literal"><span class="pre">ibid.event</span></tt> &#8211; Events<a class="headerlink" href="#module-ibid.event" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="ibid.event.Event">
+<em class="property">class </em><tt class="descclassname">ibid.event.</tt><tt class="descname">Event</tt><big>(</big><em>source</em>, <em>type</em><big>)</big><a class="headerlink" href="#ibid.event.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Events are at the core of Ibid&#8217;s workings.
+Every join/part/message seen by a source is dispatched as an
+<a title="ibid.event.Event" class="reference internal" href="#ibid.event.Event"><tt class="xref docutils literal"><span class="pre">ibid.event.Event</span></tt></a> to all the plugins to process.
+Then responses are extracted from it and returned to the source.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>source</em> &#8211; The name of the source that this event relates to.</li>
+<li><em>type</em> &#8211; <p>The type of the event, a string of one of the following
+values:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">'message'</span></tt></dt>
+<dd>A normal message</dd>
+<dt><tt class="docutils literal"><span class="pre">'action'</span></tt></dt>
+<dd>An action, the result of a <tt class="docutils literal"><span class="pre">/me</span></tt> or <tt class="docutils literal"><span class="pre">/describe</span></tt></dd>
+<dt><tt class="docutils literal"><span class="pre">'notice'</span></tt></dt>
+<dd>An IRC notice</dd>
+<dt><tt class="docutils literal"><span class="pre">'state'</span></tt></dt>
+<dd>A state change, such as join, part, online, offline</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Event inherits from <tt class="xref docutils literal"><span class="pre">dict</span></tt> so properties can be get and set
+either as attributes or keys.</p>
+<dl class="attribute">
+<dt id="ibid.event.Event.source">
+<tt class="descname">source</tt><a class="headerlink" href="#ibid.event.Event.source" title="Permalink to this definition">¶</a></dt>
+<dd>The <em>source</em> string specified at creation.</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.event.Event.type">
+<tt class="descname">type</tt><a class="headerlink" href="#ibid.event.Event.type" title="Permalink to this definition">¶</a></dt>
+<dd>The <em>type</em> string specified at creation.</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.event.Event.responses">
+<tt class="descname">responses</tt><a class="headerlink" href="#ibid.event.Event.responses" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of responses that should be returned.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Rather than appending to this directly, you should use the
+<a title="ibid.event.Event.addresponse" class="reference internal" href="#ibid.event.Event.addresponse"><tt class="xref docutils literal"><span class="pre">addresponse()</span></tt></a> function.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.event.Event.sender">
+<tt class="descname">sender</tt><a class="headerlink" href="#ibid.event.Event.sender" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sender of the event, a dict with the following keys:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">'nick'</span></tt></dt>
+<dd>The user&#8217;s nickname, as should be used for addressing him/her.</dd>
+<dt><tt class="docutils literal"><span class="pre">'id'</span></tt></dt>
+<dd>The unique identifier for the user. I.e. jabber address or SILC
+user key hash.
+Used for opening a conversation with a user.</dd>
+<dt><tt class="docutils literal"><span class="pre">'connection'</span></tt></dt>
+<dd>The unique identifier of connection that the user spoke on.
+Used for addressing the reply to the correct client.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.event.Event.complain">
+<tt class="descname">complain</tt><a class="headerlink" href="#ibid.event.Event.complain" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string, that if present says the <tt class="xref docutils literal"><span class="pre">Complain</span></tt> processor should return an error
+message to the sender.</p>
+<p>If set to <tt class="docutils literal"><span class="pre">'notauthed'</span></tt>, the complaint will be about
+insufficient authorisation.</p>
+<p>If set to <tt class="docutils literal"><span class="pre">'exception'</span></tt>, the complaint will be about the bot not
+feeling very well.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.event.Event.processed">
+<tt class="descname">processed</tt><a class="headerlink" href="#ibid.event.Event.processed" title="Permalink to this definition">¶</a></dt>
+<dd>A boolean flag indicating that the event has been processed and
+other <a title="ibid.plugins.Processor" class="reference external" href="ibid.plugins.html#ibid.plugins.Processor"><tt class="xref docutils literal"><span class="pre">Processors</span></tt></a> don&#8217;t need to
+look at it.</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.event.Event.session">
+<tt class="descname">session</tt><a class="headerlink" href="#ibid.event.Event.session" title="Permalink to this definition">¶</a></dt>
+<dd><p>A SQLAlchemy <tt class="xref docutils literal"><span class="pre">sqlalchemy.orm.session.Session</span></tt> that can be
+used by a plugin for making queries.</p>
+<p>It will be automatically committed by the dispatcher, but you are
+free to commit in a plugin so you can log a successful commit.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ibid.event.Event.addresponse">
+<tt class="descname">addresponse</tt><big>(</big><em>response</em>, <em>params={}</em>, <em>processed=True</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#ibid.event.Event.addresponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a response to an event.</p>
+<p>An event can contain more than one response, they&#8217;ll be sent as
+separate messages.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>response</em> &#8211; The unicode response to add, can contain string
+substitutions, which will be provided by <em>params</em>.</li>
+<li><em>params</em> &#8211; Parameters to substitute into <em>response</em>.
+Can either be a single unicode string or a dict of named
+substitutions.</li>
+<li><em>processed</em> &#8211; Set <a title="ibid.event.Event.processed" class="reference internal" href="#ibid.event.Event.processed"><tt class="xref docutils literal"><span class="pre">processed</span></tt></a> <tt class="xref docutils literal"><span class="pre">True</span></tt> if <tt class="xref docutils literal"><span class="pre">True</span></tt>.
+Default: <tt class="xref docutils literal"><span class="pre">True</span></tt>.</li>
+<li><em>source</em> &#8211; The source name to direct this reply to.
+Default: <a title="ibid.event.Event.source" class="reference internal" href="#ibid.event.Event.source"><tt class="xref docutils literal"><span class="pre">source</span></tt></a>.</li>
+<li><em>target</em> &#8211; The user to direct this reply to.
+Default: <a title="ibid.event.Event.sender" class="reference internal" href="#ibid.event.Event.sender"><tt class="xref docutils literal"><span class="pre">sender['connection']</span></tt></a>.</li>
+<li><em>address</em> &#8211; Boolean flag indicating if the user should be
+addressed when delivering this reply. Default: <tt class="xref docutils literal"><span class="pre">True</span></tt>.</li>
+<li><em>action</em> &#8211; Boolean flag for whether the reply is a message or
+an action. Default: <tt class="xref docutils literal"><span class="pre">False</span></tt>.</li>
+<li><em>notice</em> &#8211; Boolean flag for whether the reply is a message or
+an notice. Default: <tt class="xref docutils literal"><span class="pre">False</span></tt>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Most commonly <a title="ibid.event.Event.addresponse" class="reference internal" href="#ibid.event.Event.addresponse"><tt class="xref docutils literal"><span class="pre">addresponse()</span></tt></a> is called with a unicode
+parameter for <em>response</em> and either a single substitution in
+<em>params</em> or multiple, named substitutions.
+However, you can also pass a Boolean value as <em>response</em> in which
+case the bot will emit a generic positive or negative response.</p>
+<p>Examples (in public IRC):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+<span class="c"># Sends something like u&#39;user: Okay&#39;</span>
+<span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+<span class="c"># Sends something like u&quot;user: Shan&#39;t&quot;</span>
+<span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Sure&#39;</span><span class="p">)</span>
+<span class="c"># Sends u&quot;user: Sure&quot;</span>
+<span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Jo said &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+<span class="c"># Sends u&#39;user: Jo said &quot;hello&quot;&#39; if message was u&#39;hello&#39;</span>
+<span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;</span><span class="si">%(key)s</span><span class="s"> is </span><span class="si">%(value)s</span><span class="s">&#39;</span><span class="p">,</span> <span class="p">{</span>
+   <span class="s">&#39;key&#39;</span><span class="p">:</span> <span class="s">u&#39;Spiny Norman&#39;</span><span class="p">,</span>
+   <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="s">u&#39;a Hedgehog&#39;</span><span class="p">,</span>
+<span class="p">})</span>
+<span class="c"># Sends u&#39;user: Spiny Norman is a Hedgehog&#39;</span>
+<span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Look at me&#39;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="c"># Sends u&#39;Look at me&#39;</span>
+<span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;dances&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c"># Is the equivalent of &#39;/me dances&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="ibid.core.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">ibid.core</span></tt> &#8211; Ibid Core</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="ibid.plugins.html"
+                                  title="next chapter"><tt class="docutils literal"><span class="pre">ibid.plugins</span></tt> &#8211; Plugin registration</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/api/ibid.event.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ibid.plugins.html" title="ibid.plugins – Plugin registration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ibid.core.html" title="ibid.core – Ibid Core"
+             >previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

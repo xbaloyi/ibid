@@ -1,0 +1,329 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ibid.utils – Helper functions for plugins &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="Changes in Ibid" href="../changes.html" />
+    <link rel="prev" title="ibid.plugins – Plugin registration" href="ibid.plugins.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="../changes.html" title="Changes in Ibid"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ibid.plugins.html" title="ibid.plugins – Plugin registration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-ibid.utils">
+<h1><tt class="xref docutils literal"><span class="pre">ibid.utils</span></tt> &#8211; Helper functions for plugins<a class="headerlink" href="#module-ibid.utils" title="Permalink to this headline">¶</a></h1>
+<p>This module contains common functions that many Ibid plugins can use.</p>
+<div class="section" id="string-functions">
+<h2>String Functions<a class="headerlink" href="#string-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibid.utils.ago">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">ago</tt><big>(</big><em>delta</em><span class="optional">[</span>, <em>units</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.utils.ago" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string representation of <em>delta</em>, a
+<tt class="xref docutils literal"><span class="pre">datetime.timedelta</span></tt>.</p>
+<p>If <em>units</em>, an integer, is specified then only that many units of
+time will be used.</p>
+<div class="highlight-pycon"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ago</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="go">&#39;39 years, 6 months, 12 days, 9 hours, 59 minutes and 14 seconds&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ago</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">&#39;39 years and 6 months&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.format_date">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">format_date</tt><big>(</big><em>timestamp</em><span class="optional">[</span>, <em>length='datetime'</em>, <em>tolocaltime=True</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.utils.format_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert <tt class="xref docutils literal"><span class="pre">datetime.datetime</span></tt> <em>timestamp</em> to the local timezone
+(<em>timestamp</em> is assumed to be UTC if it has no <em>tzinfo</em>) and return a
+unicode string representation.</p>
+<p><em>length</em> can be one of <tt class="docutils literal"><span class="pre">'datetime'</span></tt>, <tt class="docutils literal"><span class="pre">'date'</span></tt> and <tt class="docutils literal"><span class="pre">'time'</span></tt>,
+specifying what to include in the output.</p>
+<p>If <em>tolocaltime</em> is <tt class="xref docutils literal"><span class="pre">False</span></tt>, the time will left in the original
+time zone.</p>
+<p>The format is specified in the <tt class="docutils literal"><span class="pre">plugins.length</span></tt> configuration
+subtree, as three values: <tt class="docutils literal"><span class="pre">datetime_format</span></tt>, <tt class="docutils literal"><span class="pre">date_format</span></tt> and
+<tt class="docutils literal"><span class="pre">time_format</span></tt>.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">format_date</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())</span>
+<span class="go">u&#39;2009-12-14 12:41:55 SAST&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.parse_timestamp">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">parse_timestamp</tt><big>(</big><em>timestamp</em><big>)</big><a class="headerlink" href="#ibid.utils.parse_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse string <em>timestamp</em>, convert it to UTC, and strip the timezone.</p>
+<p>This function is good at parsing machine timestamps, but can&#8217;t handle
+&#8220;human&#8221; times very well. (It uses <tt class="xref docutils literal"><span class="pre">dateutil.parser</span></tt>)</p>
+<p>Return a naive <tt class="xref docutils literal"><span class="pre">datetime.datetime</span></tt>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.human_join">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">human_join</tt><big>(</big><em>items</em><span class="optional">[</span>, <em>separator=u'</em>, <em>'</em>, <em>conjunction=u'and'</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.utils.human_join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn iterable <em>items</em> into a unicode list in the format <tt class="docutils literal"><span class="pre">a,</span> <span class="pre">b,</span> <span class="pre">c</span>
+<span class="pre">and</span> <span class="pre">d</span></tt>.</p>
+<p><em>separator</em> separates all values except the last two, separated by
+<em>conjunction</em>.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">human_join</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">])</span>
+<span class="go">u&#39;a, b, c and d&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.plural">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">plural</tt><big>(</big><em>count</em>, <em>singular</em>, <em>plural</em><big>)</big><a class="headerlink" href="#ibid.utils.plural" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <em>count</em> is 1, return <em>singular</em>, otherwise <em>plural</em>.</p>
+<p>It&#8217;s recommended to use complete words for <em>singular</em> and <em>plural</em>
+rather than suffixes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.decode_htmlentities">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">decode_htmlentities</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#ibid.utils.decode_htmlentities" title="Permalink to this definition">¶</a></dt>
+<dd>Return <em>text</em> with all HTML entities removed, both numeric and
+string-style.</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.file_in_path">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">file_in_path</tt><big>(</big><em>program</em><big>)</big><a class="headerlink" href="#ibid.utils.file_in_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a boolean indicating whether the program of name <em>program</em>
+can be found, using the <tt class="docutils literal"><span class="pre">PATH</span></tt> environment variable.</p>
+<p>Similar to <tt class="docutils literal"><span class="pre">which</span></tt> on the command line.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.get_process_output">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">get_process_output</tt><big>(</big><em>command</em>, <em>input=None</em><big>)</big><a class="headerlink" href="#ibid.utils.get_process_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs <em>command</em>, a list of arguments where the first argument is the
+process to run (as in <tt class="xref docutils literal"><span class="pre">subprocess.Popen</span></tt>).
+The command will be fed <em>input</em> on standard input, and
+<a title="ibid.utils.get_process_output" class="reference internal" href="#ibid.utils.get_process_output"><tt class="xref docutils literal"><span class="pre">get_process_output()</span></tt></a> will block until the command exits.</p>
+<p>Returns a tuple of (<em>output</em>, <em>error</em>, <em>code</em>): standard output,
+standard error, and exit code.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.unicode_output">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">unicode_output</tt><big>(</big><em>output</em><span class="optional">[</span>, <em>errors='strict'</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.utils.unicode_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decodes <em>output</em> a string, to unicode, using the character set
+specified in the <tt class="docutils literal"><span class="pre">LANG</span></tt> environment variable.
+<em>errors</em> has the same behaviour as the builtin <tt class="xref docutils literal"><span class="pre">unicode()</span></tt>.</p>
+<p>Useful for parsing program output.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.ibid_version">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">ibid_version</tt><big>(</big><big>)</big><a class="headerlink" href="#ibid.utils.ibid_version" title="Permalink to this definition">¶</a></dt>
+<dd>Return the current Ibid version or <tt class="xref docutils literal"><span class="pre">None</span></tt> if no version can be
+determined.</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.locate_resource">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">locate_resource</tt><big>(</big><em>path</em>, <em>filename</em><big>)</big><a class="headerlink" href="#ibid.utils.locate_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Locate a resource shipped with Ibid.
+<em>path</em> is specified as a python package (e.g. <tt class="docutils literal"><span class="pre">'ibid'</span></tt>).
+<em>filename</em> is the relative path within the package (e.g.
+<tt class="docutils literal"><span class="pre">'data/something.txt'</span></tt>)</p>
+<p>Returns the filename to the resource.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="url-functions">
+<h2>URL Functions<a class="headerlink" href="#url-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibid.utils.url_regex">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">url_regex</tt><big>(</big><big>)</big><a class="headerlink" href="#ibid.utils.url_regex" title="Permalink to this definition">¶</a></dt>
+<dd>Returns a regular expression string (not a <tt class="xref docutils literal"><span class="pre">re.RegexObject</span></tt>)
+for matching a URL.</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.is_url">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">is_url</tt><big>(</big><em>url</em><big>)</big><a class="headerlink" href="#ibid.utils.is_url" title="Permalink to this definition">¶</a></dt>
+<dd>Is <em>url</em> a valid URL? (according to <a title="ibid.utils.url_regex" class="reference internal" href="#ibid.utils.url_regex"><tt class="xref docutils literal"><span class="pre">url_regex()</span></tt></a>)</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.url_to_bytestring">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">url_to_bytestring</tt><big>(</big><em>url</em><big>)</big><a class="headerlink" href="#ibid.utils.url_to_bytestring" title="Permalink to this definition">¶</a></dt>
+<dd>Convert a unicode <em>url</em> to punycode host and UTF-8 path.
+This allows IDN URLs to be opened with <tt class="xref docutils literal"><span class="pre">urllib</span></tt>.</dd></dl>
+
+</div>
+<div class="section" id="web-service-functions">
+<h2>Web Service Functions<a class="headerlink" href="#web-service-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibid.utils.cacheable_download">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">cacheable_download</tt><big>(</big><em>url</em>, <em>cachefile</em><span class="optional">[</span>, <em>headers</em>, <em>timeout=60</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.utils.cacheable_download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Useful for data files that you don&#8217;t want to keep re-downloading, but
+do occasionally change.</p>
+<p><em>url</em> is a URL to download, to a file named <em>cachefile</em>.
+<em>cachefile</em> should be in the form of <tt class="docutils literal"><span class="pre">pluginname/filename</span></tt>.
+It will be stored in the configured <tt class="docutils literal"><span class="pre">plugins.cachedir</span></tt> and the full
+filename returned.
+Extra HTTP headers in <em>headers</em> can be supplied, if necessary.</p>
+<p>If <em>cachefile</em> already exists, <a title="ibid.utils.cacheable_download" class="reference internal" href="#ibid.utils.cacheable_download"><tt class="xref docutils literal"><span class="pre">cacheable_download()</span></tt></a> will do an
+<em>If-Modified-Since</em> HTTP request.
+It handles HTTP-compression.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">filename</span> <span class="o">=</span> <span class="n">cacheable_download</span><span class="p">(</span>
+   <span class="s">&#39;http://www.iso.org/iso/country_codes/iso_3166_code_lists/iso-3166-1_decoding_table.htm&#39;</span><span class="p">,</span>
+   <span class="s">&#39;lookup/iso-3166-1_decoding_table.htm&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.generic_webservice">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">generic_webservice</tt><big>(</big><em>url</em><span class="optional">[</span>, <em>params</em>, <em>headers</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.utils.generic_webservice" title="Permalink to this definition">¶</a></dt>
+<dd>Request <em>url</em>, with optional dicts of parameters <em>params</em> and headers
+<em>headers</em>, and return the data.</dd></dl>
+
+<dl class="function">
+<dt id="ibid.utils.json_webservice">
+<tt class="descclassname">ibid.utils.</tt><tt class="descname">json_webservice</tt><big>(</big><em>url</em><span class="optional">[</span>, <em>params</em>, <em>headers</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.utils.json_webservice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request <em>url</em>, with optional dicts of parameters <em>params</em> and headers
+<em>headers</em>, and parse as JSON.</p>
+<p><a title="ibid.utils.JSONException" class="reference internal" href="#ibid.utils.JSONException"><tt class="xref docutils literal"><span class="pre">JSONException</span></tt></a> will be raised if the returned data isn&#8217;t valid
+JSON.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ibid.utils.JSONException">
+<em class="property">exception </em><tt class="descclassname">ibid.utils.</tt><tt class="descname">JSONException</tt><big>(</big><em>Exception</em><big>)</big><a class="headerlink" href="#ibid.utils.JSONException" title="Permalink to this definition">¶</a></dt>
+<dd>Raised by <a title="ibid.utils.json_webservice" class="reference internal" href="#ibid.utils.json_webservice"><tt class="xref docutils literal"><span class="pre">json_webservice()</span></tt></a> if invalid JSON is returned.</dd></dl>
+
+</div>
+<div class="section" id="module-ibid.utils.html">
+<h2><tt class="xref docutils literal"><span class="pre">ibid.utils.html</span></tt> &#8211; HTML Parsing<a class="headerlink" href="#module-ibid.utils.html" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibid.utils.html.get_html_parse_tree">
+<tt class="descclassname">ibid.utils.html.</tt><tt class="descname">get_html_parse_tree</tt><big>(</big><em>url</em><span class="optional">[</span>, <em>data</em>, <em>headers</em>, <em>treetype='beautifulsoup</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.utils.html.get_html_parse_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request <em>url</em>, and return a parse-tree of type <em>treetype</em>.
+<em>data</em> and <em>headers</em> are optionally used in the request.</p>
+<p><em>treetype</em> can be any type supported by <tt class="xref docutils literal"><span class="pre">html5lib</span></tt>, most
+commonly <tt class="docutils literal"><span class="pre">'etree'</span></tt> or <tt class="docutils literal"><span class="pre">'beautifulsoup'</span></tt>.</p>
+<p><a title="ibid.utils.html.ContentTypeException" class="reference internal" href="#ibid.utils.html.ContentTypeException"><tt class="xref docutils literal"><span class="pre">ContentTypeException</span></tt></a> will be raised if the returned data isn&#8217;t
+HTML.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ibid.utils.html.ContentTypeException">
+<em class="property">exception </em><tt class="descclassname">ibid.utils.html.</tt><tt class="descname">ContentTypeException</tt><big>(</big><em>Exception</em><big>)</big><a class="headerlink" href="#ibid.utils.html.ContentTypeException" title="Permalink to this definition">¶</a></dt>
+<dd>Raised by <a title="ibid.utils.html.get_html_parse_tree" class="reference internal" href="#ibid.utils.html.get_html_parse_tree"><tt class="xref docutils literal"><span class="pre">get_html_parse_tree()</span></tt></a> if the content type isn&#8217;t HTML.</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#"><tt class="docutils literal"><span class="pre">ibid.utils</span></tt> &#8211; Helper functions for plugins</a><ul>
+<li><a class="reference external" href="#string-functions">String Functions</a></li>
+<li><a class="reference external" href="#url-functions">URL Functions</a></li>
+<li><a class="reference external" href="#web-service-functions">Web Service Functions</a></li>
+<li><a class="reference external" href="#module-ibid.utils.html"><tt class="docutils literal"><span class="pre">ibid.utils.html</span></tt> &#8211; HTML Parsing</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="ibid.plugins.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">ibid.plugins</span></tt> &#8211; Plugin registration</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../changes.html"
+                                  title="next chapter">Changes in Ibid</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/api/ibid.utils.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../changes.html" title="Changes in Ibid"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ibid.plugins.html" title="ibid.plugins – Plugin registration"
+             >previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

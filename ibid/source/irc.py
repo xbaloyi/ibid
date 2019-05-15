@@ -28,10 +28,6 @@ class Ircbot(irc.IRCClient):
     def connectionMade(self):
         self.nickname = self.factory.nick.encode('utf-8')
         self.realname = self.factory.realname.encode('utf-8')
-        if self.factory.password is not None:
-            self.password = self.factory.password.encode('utf-8')
-        if self.factory.username is not None:
-            self.username = self.factory.username.encode('utf-8')
 
         irc.IRCClient.connectionMade(self)
 
@@ -89,7 +85,7 @@ class Ircbot(irc.IRCClient):
             self.mode(self.nickname, True, self.factory.modes.encode('utf-8'))
         self.ctcpMakeQuery(self.nickname, [('HOSTMASK', None)])
         for channel in self.factory.channels:
-            self.join(channel)
+            self.join(channel.encode('utf-8'))
         self.factory.log.info(u"Signed on")
 
         event = Event(self.factory.name, u'source')
@@ -173,19 +169,6 @@ class Ircbot(irc.IRCClient):
         message = unicode(message, 'utf-8', 'replace')
         self._state_event(kickee, channel, u'kicked', kicker, message)
 
-    def invited(self, user, channel):
-        user = unicode(user, 'utf-8', 'replace')
-        channel = unicode(channel, 'utf-8', 'replace')
-
-        event = self._create_event(u'invite', user, user)
-        event.target_channel = channel
-        event.public = False
-        event.addressed = True
-        self.factory.log.debug(u'Invited into %s by %s',
-                                channel,
-                                event.sender['id'])
-        ibid.dispatcher.dispatch(event).addCallback(self.respond)
-
     def respond(self, event):
         for response in event.responses:
             self.send(response)
@@ -210,21 +193,16 @@ class Ircbot(irc.IRCClient):
             self.notice(raw_target, raw_message)
             self.factory.log.debug(u"Sent notice to %s: %s", target, message)
         else:
-            # we do our own truncation
-            self.msg(raw_target, raw_message, length=512)
+            self.msg(raw_target, raw_message)
             self.factory.log.debug(u"Sent privmsg to %s: %s", target, message)
 
-    def join(self, channel, key=None):
-        if key:
-            self.factory.log.info(u"Joining %s with key %s", channel, key)
-            key = key.encode('utf-8')
-        else:
-            self.factory.log.info(u"Joining %s", channel)
-        irc.IRCClient.join(self, channel.encode('utf-8'), key)
+    def join(self, channel):
+        self.factory.log.info(u"Joining %s", channel)
+        irc.IRCClient.join(self, channel.encode('utf-8'))
 
     def joined(self, channel):
         event = Event(self.factory.name, u'source')
-        event.channel = unicode(channel, 'utf-8', 'replace')
+        event.channel = channel
         event.status = u'joined'
         ibid.dispatcher.dispatch(event)
 
@@ -265,8 +243,6 @@ class Ircbot(irc.IRCClient):
             self.do_auth_callback(params[1], True)
         elif command == "RPL_ENDOFWHOIS":
             self.do_auth_callback(params[1], False)
-        elif command == 'INVITE' and params[0].lower() == self.nickname.lower():
-            self.invited(prefix, params[1])
 
     def irc_RPL_BOUNCE(self, prefix, params):
         # Broken in IrcClient :/
@@ -310,15 +286,13 @@ class SourceFactory(protocol.ReconnectingClientFactory, IbidSourceFactory):
     protocol = Ircbot
 
     auth = ('hostmask', 'nickserv')
-    supports = ('action', 'notice', 'topic', 'channel key')
+    supports = ('action', 'notice', 'topic')
 
     port = IntOption('port', 'Server port number', 6667)
     ssl = BoolOption('ssl', 'Use SSL', False)
     server = Option('server', 'Server hostname')
     nick = Option('nick', 'IRC nick', ibid.config['botname'])
     realname = Option('realname', 'Full Name', ibid.config['botname'])
-    password = Option('password', 'Connection password', None)
-    username = Option('username', 'Local username', None)
     modes = Option('modes', 'User modes to set')
     channels = ListOption('channels', 'Channels to autojoin', [])
     ping_interval = FloatOption('ping_interval', 'Seconds idle before sending a PING', 60)
@@ -357,8 +331,8 @@ class SourceFactory(protocol.ReconnectingClientFactory, IbidSourceFactory):
             self.proto.transport.loseConnection()
         return True
 
-    def join(self, channel, key=None):
-        return self.proto.join(channel, key)
+    def join(self, channel):
+        return self.proto.join(channel)
 
     def leave(self, channel):
         return self.proto.leave(channel)

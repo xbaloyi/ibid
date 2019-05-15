@@ -30,7 +30,7 @@ if 'trac' in ibid.databases:
 class Tickets(Processor, RPC):
     usage = u"""ticket <number>
     (open|my|<who>'s) tickets"""
-    features = ('trac',)
+    feature = ('trac',)
     autoload = 'trac' in ibid.databases
 
     url = Option('url', 'URL of Trac instance')

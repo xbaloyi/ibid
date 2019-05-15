@@ -1,0 +1,508 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Changes in Ibid &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="index.html" />
+    <link rel="prev" title="ibid.utils – Helper functions for plugins" href="api/ibid.utils.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="api/ibid.utils.html" title="ibid.utils – Helper functions for plugins"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="changes-in-ibid">
+<h1>Changes in Ibid<a class="headerlink" href="#changes-in-ibid" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="release-0-1-1-pimpernel-2011-02-24">
+<h2>Release 0.1.1 &#8220;Pimpernel&#8221; (2011-02-24)<a class="headerlink" href="#release-0-1-1-pimpernel-2011-02-24" title="Permalink to this headline">¶</a></h2>
+<p>Bug fix release, including a couple of security issues.</p>
+<p>Several plugins that consume Web services or scrape Web sites have been
+updated to cope with changes since the last release.</p>
+<p>There were no DB schema changes between 0.1.0 and 0.1.1.</p>
+<div class="section" id="resolved-security-issues">
+<h3>Resolved Security Issues<a class="headerlink" href="#resolved-security-issues" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="remote-execution">
+<h4>Remote Execution<a class="headerlink" href="#remote-execution" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><a class="reference external" href="https://bugs.launchpad.net/bugs/705860">LP: #705860</a>:</dt>
+<dd><p class="first">Permissions were ignored for handlers not using <a title="ibid.plugins.match" class="reference external" href="api/ibid.plugins.html#ibid.plugins.match"><tt class="xref docutils literal"><span class="pre">&#64;match</span></tt></a>.
+This allowed users to perform actions they were not authorised to.</p>
+<p class="last">However, no included plugins were exposed by this, all
+access-restricted handlers had match patterns.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="information-disclosure">
+<h4>Information Disclosure<a class="headerlink" href="#information-disclosure" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><a class="reference external" href="https://bugs.launchpad.net/bugs/567576">LP: #567576</a>:</dt>
+<dd><p class="first">Occasionally insecure permissions on log files.
+When the bot spoke first (creating a new log file), the log file
+would be publicly readable, even if the message was sent in private.</p>
+<p>Example:
+If the bot delivered a <em>privmsg</em> memo to a user at the beginning of
+the month, it would create the logfile with public readable
+permissions.
+If the logfile directory was published by a web server, this would
+make this private conversation log accessible to the public.</p>
+<p class="last">Resolution: Now channels must be explicitly configured to have
+publicly readable logs.</p>
+</dd>
+<dt><a class="reference external" href="https://bugs.launchpad.net/bugs/649383">LP: #649383</a>:</dt>
+<dd><p class="first">If someone received a private message from the bot
+during a public meeting, the message could appear in the meeting
+minutes.</p>
+<p class="last">Example: a <em>privmsg</em> memo received during a meeting would appear in
+the minutes.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="major-user-visible-changes">
+<h3>Major User Visible Changes<a class="headerlink" href="#major-user-visible-changes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>New configuration option <tt class="docutils literal"><span class="pre">plugins.log.public_logs</span></tt>, a list of
+<tt class="docutils literal"><span class="pre">source:channel</span></tt> globs of channels to log in files with publically
+readable permissions.</li>
+<li>New configuration option <tt class="docutils literal"><span class="pre">plugins.ascii.preferred_fonts</span></tt>, a list of
+figlet fonts, the first one found is the default.</li>
+<li>Currency exchange now uses Yahoo instead of XE.com.</li>
+</ul>
+</div>
+<div class="section" id="api-changes">
+<h3>API Changes<a class="headerlink" href="#api-changes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>New Function: <a title="ibid.utils.parse_timestamp" class="reference external" href="api/ibid.utils.html#ibid.utils.parse_timestamp"><tt class="xref docutils literal"><span class="pre">ibid.utils.parse_timestamp()</span></tt></a> for parsing
+well-formatted timestamps.</li>
+<li>New Function: <a title="ibid.utils.generic_webservice" class="reference external" href="api/ibid.utils.html#ibid.utils.generic_webservice"><tt class="xref docutils literal"><span class="pre">ibid.utils.generic_webservice()</span></tt></a> for retrieving
+arbitrary data from a web-service.</li>
+<li>New Function: <tt class="xref docutils literal"><span class="pre">ibid.db.get_regexp_op()</span></tt> which returns a REGEXP
+SqlAlchemy operator for the DBMS in use.</li>
+</ul>
+</div>
+<div class="section" id="all-changes">
+<h3>All Changes<a class="headerlink" href="#all-changes" title="Permalink to this headline">¶</a></h3>
+<p>2011-02-23  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Remove MyLifeIsG.com support from MyLifeIsAverage Processor. The
+site has been down for around a year.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/722675">LP: #722675</a>.</p>
+</blockquote>
+<p>2011-02-22  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Use bounded_matches when returning search results.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/722655">LP: #722655</a>.</p>
+</blockquote>
+<p>2011-02-22  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Typo: parse_timestmap -&gt; parse_timestamp (and remove an unnecessary
+import).</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/722682">LP: #722682</a>.</p>
+</blockquote>
+<p>2011-02-22  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Allow addresponse() to take the param 0.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/723132">LP: #723132</a>.</p>
+</blockquote>
+<p>2011-02-21  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+Added CHANGES and tool for generating changelog entries.
+Set version to 0.1.1.</blockquote>
+<p>2011-02-20  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Filter out empty definitions in gdefine.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/719851">LP: #719851</a>.</p>
+</blockquote>
+<p>2011-02-20  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>We don&#8217;t support SQLAlchemy 0.6 yet.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/651992">LP: #651992</a>.</p>
+</blockquote>
+<p>2011-02-20  Marco Gallotta  &lt;<a class="reference external" href="mailto:marco&#37;&#52;&#48;gallotta&#46;co&#46;za">marco<span>&#64;</span>gallotta<span>&#46;</span>co<span>&#46;</span>za</a>&gt;</p>
+<blockquote>
+<p>Only append .com for url&#8217;s like &#8220;example&#8221;.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/702062">LP: #702062</a>.</p>
+</blockquote>
+<p>2011-02-20  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Use escape=# for LIKEs.
+Perform literal queries on all non-get Factoid operations. Return
+useful error if start index is too high.
+Substitute $arg for _% in search.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/544493">LP: #544493</a>.</p>
+</blockquote>
+<p>2011-02-20  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>HTTPErrors should result in using url as title, not abandoning the
+grab.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/702798">LP: #702798</a>.</p>
+</blockquote>
+<p>2011-02-20  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Catch ImportErrors for packages we don&#8217;t require in setup.py.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/651990">LP: #651990</a>.</p>
+</blockquote>
+<p>2011-02-20  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>pysqlite is only necessary on ancient Pythons.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/708302">LP: #708302</a>.</p>
+</blockquote>
+<p>2011-01-25  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Add function get_regexp_op to ibid.db that returns a REGEXP op that
+works on Postgres too.</p>
+<p>Fixes: <a class="reference external" href="https://bugs.launchpad.net/bugs/595423">LP: #595423</a>.</p>
+</blockquote>
+<p>2011-01-22  Keegan Carruthers-Smith  &lt;<a class="reference external" href="mailto:keegan&#46;csmith&#37;&#52;&#48;gmail&#46;com">keegan<span>&#46;</span>csmith<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Use correct plurality in pending memos message.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/634257">LP: #634257</a>.</p>
+</blockquote>
+<p>2011-01-22  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Add parse_timestamp function to ibid.utils, use for parsing
+timestamps from Twitter.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/702815">LP: #702815</a>.</p>
+</blockquote>
+<p>2011-01-22  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>URLErrors have reasons, but there are other HTTPErrors</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/670855">LP: #670855</a>.</p>
+</blockquote>
+<p>2011-01-21  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Enforce permissions on <a class="reference external" href="mailto:non-&#37;&#52;&#48;match">non-<span>&#64;</span>match</a> handlers.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/705860">LP: #705860</a>.</p>
+</blockquote>
+<p>2011-01-19  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Handle non-500 error codes from twitter.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/670855">LP: #670855</a>.</p>
+</blockquote>
+<p>2011-01-19  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Strip tags from gcalc response.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/702371">LP: #702371</a>.</p>
+</blockquote>
+<p>2011-01-19  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Check content_type is set before checking its value.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/701900">LP: #701900</a>.</p>
+</blockquote>
+<p>2011-01-19  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Catch exceptions when polling feeds so that one broken feed doesn&#8217;t
+stop all feeds.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/578396">LP: #578396</a>.</p>
+</blockquote>
+<p>2011-01-19  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Use new OEIS API at oeis.org</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/700475">LP: #700475</a>.</p>
+</blockquote>
+<p>2010-12-25  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Fix for the logging open file cache: Logs in logs might not be in
+recent_logs.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/655645">LP: #655645</a>.</p>
+</blockquote>
+<p>2010-12-25  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Support toilet fonts, correctly decode utf-8 figlet output, handle
+font choice edge cases.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/607743">LP: #607743</a>.</p>
+</blockquote>
+<p>2010-12-24  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Follow redirects in &#8220;is it up&#8221;</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/599410">LP: #599410</a>.</p>
+</blockquote>
+<p>2010-12-24  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Rework nickserv auth to allow simultaneous authentications for the
+same nick (although Nickserv will only be bothered once).</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/655647">LP: #655647</a>.</p>
+</blockquote>
+<p>2010-12-24  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Use absolute imports to import SILC correctly</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/654202">LP: #654202</a>.</p>
+</blockquote>
+<p>2010-12-20  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Country Code list parsing: Check for ; in a line before splitting by
+semi-colons.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/692347">LP: #692347</a>.</p>
+</blockquote>
+<p>2010-12-20  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Don&#8217;t treat feeds with no messages as errors.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/661187">LP: #661187</a>.</p>
+</blockquote>
+<p>2010-11-08  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Correctly handle state events that have no channel.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/656349">LP: #656349</a>.</p>
+</blockquote>
+<p>2010-11-07  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Port google scrape search to get_html_parse_tree + etree. Handle
+superscript in gcalc.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/580696">LP: #580696</a>.</p>
+</blockquote>
+<p>2010-11-07  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+Put periodic lock-using code in a try...finally block.</blockquote>
+<p>2010-10-15  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Support twitter&#8217;s new AJAX URLs.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/654535">LP: #654535</a>.</p>
+</blockquote>
+<p>2010-10-15  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Always respond to memo sending with confirmation of recipient. Allow
+memos to begin with &#8220;on ...&#8221; when not naming a known source.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/634253">LP: #634253</a>.</p>
+</blockquote>
+<p>2010-10-04  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Disallow empty factoid names.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/606065">LP: #606065</a>.</p>
+</blockquote>
+<p>2010-10-05  Guy Halse</p>
+<blockquote>
+<p>Allow bot to identify with zanet.net&#8217;s NickServ.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/652000">LP: #652000</a>.</p>
+</blockquote>
+<p>2010-10-03  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>[SECURITY] Add a configuration glob-list of channels which should
+have public logs, rather than attempting to guess.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/567576">LP: #567576</a>.</p>
+</blockquote>
+<p>2010-09-30  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+Docs: Be clear that ibid is in Debian &amp; Ubuntu.</blockquote>
+<p>2010-09-30  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Handle 0 tweets in Twitter Atom feed parsing, correctly handle it
+elsewhere instead of treating it as no such twit.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/646989">LP: #646989</a>.</p>
+</blockquote>
+<p>2010-09-29  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>[SECURITY] Don&#8217;t leak private messages to meeting logs.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/649383">LP: #649383</a>.</p>
+</blockquote>
+<p>2010-08-14  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Don&#8217;t try to process() events without a message in meeting.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/598094">LP: #598094</a>.</p>
+</blockquote>
+<p>2010-07-10  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+Correct abbreviated cross-ref format, shown up by Sphinx 1.0b1.</blockquote>
+<p>2010-07-04  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Display latest tweets from retweeting-twits instead of thinking they
+don&#8217;t exist.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/554906">LP: #554906</a>.</p>
+</blockquote>
+<p>2010-06-13  Michael Gorven  &lt;<a class="reference external" href="mailto:michael&#37;&#52;&#48;gorven&#46;za&#46;net">michael<span>&#64;</span>gorven<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+Fix real JID detection when more than one &#8216;x&#8217; element is received.</blockquote>
+<p>2010-06-07  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+NickServ support for rizon.</blockquote>
+<p>2010-06-04  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+Switch from XE.com to Yahoo for currency conversions.</blockquote>
+<p>2010-06-04  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Limit the size of the file-descriptor pool in log.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/567571">LP: #567571</a>.</p>
+</blockquote>
+<p>2010-05-12  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Google is also a calculator.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/574300">LP: #574300</a>.</p>
+</blockquote>
+<p>2010-05-12  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Use explicit lower() on each side of LIKE so factoids with arguments
+can be case-insensitive on Postgres.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/574427">LP: #574427</a>.</p>
+</blockquote>
+<p>2010-05-05  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Escape query url in google scrape.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/572308">LP: #572308</a>.</p>
+</blockquote>
+<p>2010-05-05  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+Incorrect substitution in SQLite indexing warning.</blockquote>
+<p>2010-05-05  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Change administrative user &amp; identity linking syntax to be less
+problematically broad.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/567510">LP: #567510</a>.</p>
+</blockquote>
+<p>2010-04-26  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Increase default HTTP GET size from 500 bytes to 2kiB.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/563928">LP: #563928</a>.</p>
+</blockquote>
+<p>2010-04-13  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Update youtube plugin to cope with site redesign.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/561684">LP: #561684</a>.</p>
+</blockquote>
+<p>2010-04-13  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+Allow digits in Unicode character names.</blockquote>
+<p>2010-04-13  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>HTTP GET: Don&#8217;t assume everything is utf-8, decode according to
+provided charset, fall back to utf-8 for text, and guess with chardet
+if either of those was wrong.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/560973">LP: #560973</a>.</p>
+</blockquote>
+<p>2010-04-09  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Use unicode case-insensitive matching in factoid.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/542707">LP: #542707</a>.</p>
+</blockquote>
+<p>2010-03-27  Michael Gorven  &lt;<a class="reference external" href="mailto:michael&#37;&#52;&#48;gorven&#46;za&#46;net">michael<span>&#64;</span>gorven<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+<p>Treat the Processor&#8217;s first feature as the primary feature in RPC.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/545168">LP: #545168</a>.</p>
+</blockquote>
+<p>2010-03-27  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Respond with unicode in bible error handlers.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/544260">LP: #544260</a>.</p>
+</blockquote>
+<p>2010-03-26  Marco Gallotta  &lt;<a class="reference external" href="mailto:marco&#37;&#52;&#48;gallotta&#46;co&#46;za">marco<span>&#64;</span>gallotta<span>&#46;</span>co<span>&#46;</span>za</a>&gt;</p>
+<blockquote>
+<p>Allow trailing punctuation in tea-style addressing.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/545186">LP: #545186</a>.</p>
+</blockquote>
+<p>2010-03-23  Marco Gallotta  &lt;<a class="reference external" href="mailto:marco&#37;&#52;&#48;gallotta&#46;co&#46;za">marco<span>&#64;</span>gallotta<span>&#46;</span>co<span>&#46;</span>za</a>&gt;</p>
+<blockquote>
+<p>Add username=ibid parameter to geonames API calls. Some calls now
+require it.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/543989">LP: #543989</a>.</p>
+</blockquote>
+<p>2010-03-23  Max Rabkin  &lt;<a class="reference external" href="mailto:max&#46;rabkin&#37;&#52;&#48;gmail&#46;com">max<span>&#46;</span>rabkin<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<blockquote>
+<p>Python 2.5 compatibility update for unicode lookup. Exception for
+unknown character changed in 2.6.</p>
+<p>Fixes <a class="reference external" href="https://bugs.launchpad.net/bugs/542593">LP: #542593</a>.</p>
+</blockquote>
+<p>2010-03-10  Stefano Rivera  &lt;<a class="reference external" href="mailto:stefano&#37;&#52;&#48;rivera&#46;za&#46;net">stefano<span>&#64;</span>rivera<span>&#46;</span>za<span>&#46;</span>net</a>&gt;</p>
+<blockquote>
+Add placeholder to force ibid/static to be distributed.</blockquote>
+</div>
+</div>
+<div class="section" id="release-0-1-0-hazel-2010-03-10">
+<h2>Release 0.1.0 &#8220;Hazel&#8221; (2010-03-10)<a class="headerlink" href="#release-0-1-0-hazel-2010-03-10" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>First public release.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Changes in Ibid</a><ul>
+<li><a class="reference external" href="#release-0-1-1-pimpernel-2011-02-24">Release 0.1.1 &#8220;Pimpernel&#8221; (2011-02-24)</a></li>
+<li><a class="reference external" href="#release-0-1-0-hazel-2010-03-10">Release 0.1.0 &#8220;Hazel&#8221; (2010-03-10)</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="api/ibid.utils.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">ibid.utils</span></tt> &#8211; Helper functions for plugins</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/changes.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/ibid.utils.html" title="ibid.utils – Helper functions for plugins"
+             >previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

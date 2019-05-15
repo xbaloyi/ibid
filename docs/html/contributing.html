@@ -1,0 +1,321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Contributing &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="index.html" />
+    <link rel="next" title="API Reference" href="api/index.html" />
+    <link rel="prev" title="Ibid Plugin Tutorial" href="tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="api/index.html" title="API Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Ibid Plugin Tutorial"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="contributing">
+<span id="id1"></span><h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="bug-reporting">
+<span id="id2"></span><h2>Bug Reporting<a class="headerlink" href="#bug-reporting" title="Permalink to this headline">¶</a></h2>
+<p>Please report any bugs in <a class="reference external" href="https://bugs.launchpad.net/ibid">the Launchpad tracker</a>.
+(Oh, and check for existing ones that match your problem first.)</p>
+<p>Good bug reports describe the problem, include the message to the bot
+that caused the bug, and any logging information / exceptions from
+<tt class="docutils literal"><span class="pre">ibid.log</span></tt>.</p>
+</div>
+<div class="section" id="submitting-patches">
+<h2>Submitting Patches<a class="headerlink" href="#submitting-patches" title="Permalink to this headline">¶</a></h2>
+<p>Want to go one step further, and fix your bug or add a new feature.
+We welcome contributions from everyone.
+The best way to get a patch merged quickly is to follow the same
+development process as the Ibid developers:</p>
+<ol class="arabic">
+<li><p class="first">If you don&#8217;t have one, <a class="reference external" href="https://launchpad.net/+login">create a Launchpad account</a> and configure Bazaar to use it.</p>
+</li>
+<li><p class="first">If there isn&#8217;t a bug in the tracker for this change, file one.
+It motivates the change.</p>
+</li>
+<li><p class="first">Mark the bug as <em>In Progress</em>, assigned to you.</p>
+</li>
+<li><p class="first">Take a branch of Ibid trunk (See <a class="reference internal" href="#bzr-guide"><em>Bazaar for Ibid Developers</em></a> if you are new to
+Bazaar):</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ bzr branch lp:ibid description-1234
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">description</span></tt> is a two or three-word hyphen-separated description
+of the branch, <tt class="docutils literal"><span class="pre">1234</span></tt> is the Launchpad bug number.</p>
+</li>
+<li><p class="first">Fix your bug in this branch, following the <a class="reference internal" href="#style-guidelines"><em>Style Guidelines</em></a>.
+See also <a class="reference internal" href="#dev-instance"><em>Running a Development Ibid</em></a>.</p>
+</li>
+<li><p class="first">Link the commit that fixes the bug to the launchpad bug:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ bzr commit --fixes lp:1234
+</pre></div>
+</div>
+</li>
+<li><p class="first">Test that the fix works as expected and doesn&#8217;t introduce any new
+bugs. <tt class="docutils literal"><span class="pre">pyflakes</span></tt> can find syntax errors you missed.</p>
+</li>
+<li><p class="first">Run the test-cases:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ trial ibid
+</pre></div>
+</div>
+</li>
+<li><p class="first">Push the branch to Launchpad:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ bzr push lp:~yourname/ibid/description-1234
+</pre></div>
+</div>
+</li>
+<li><p class="first">Find the branch <a class="reference external" href="https://code.launchpad.net/ibid">on Launchpad</a> and
+propose it for merging into the Ibid trunk.</p>
+</li>
+<li><p class="first">Proposals require approvals by a member of <a class="reference external" href="https://launchpad.net/~ibid-core">ibid-core</a> and two members of <a class="reference external" href="https://launchpad.net/~ibid-dev">ibid-dev</a> (or simply two members of
+ibid-core).</p>
+<p>Please join ibid-dev and help out with review.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="style-guidelines">
+<span id="id3"></span><h2>Style Guidelines<a class="headerlink" href="#style-guidelines" title="Permalink to this headline">¶</a></h2>
+<p>Writing code that matches the Ibid style will lead to a consistent code
+base thus happy developers.</p>
+<ul class="simple">
+<li>Follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008">PEP 8</a>, where it
+makes sense.</li>
+<li>4 space indentation.</li>
+<li>Single quotes are preferred to double, where sensible.</li>
+<li>Almost all of Ibid should be compatible with Python 2.4+ (but not 3).
+Compatibility functions, imports, and libraries can be found in
+<a title="Python-version-independent imports of common modules" class="reference external" href="api/ibid.compat.html#module-ibid.compat"><tt class="xref docutils literal"><span class="pre">ibid.compat</span></tt></a>.</li>
+<li>There is more on good style in <a class="reference external" href="http://python.net/~goodger/projects/pycon/2007/idiomatic/handout.html">Code Like a Pythonista: Idiomatic
+Python</a>.</li>
+</ul>
+<div class="section" id="naming-conventions">
+<h3>Naming Conventions<a class="headerlink" href="#naming-conventions" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Features should either go into an existing plugin, or if large enough
+into a plugin of the same name as the feature (singular).</li>
+<li>Database table names are plural.</li>
+</ul>
+</div>
+<div class="section" id="sources">
+<h3>Sources<a class="headerlink" href="#sources" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Follow <a class="reference external" href="http://twistedmatrix.com/trac/browser/trunk/doc/core/development/policy/coding-standard.xhtml?format=raw">Twisted style</a>.</li>
+</ul>
+</div>
+<div class="section" id="plugins">
+<h3>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>All features should have help and usage strings.</li>
+<li>Try to code for the general case, rather than your specific problem.
+<tt class="docutils literal"><span class="pre">Option</span></tt> configurables are handy for this, but don&#8217;t bother making
+things that will never be changed configurable (i.e. static API
+endpoints).</li>
+<li>Use <tt class="docutils literal"><span class="pre">event.addresponse</span></tt>&#8216;s string formatting abilities where
+possible.
+This will aid in future translation.</li>
+<li>Any changes to database schema should have upgrade-rules included for
+painless upgrade by users.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="bazaar-for-ibid-developers">
+<span id="bzr-guide"></span><h2>Bazaar for Ibid Developers<a class="headerlink" href="#bazaar-for-ibid-developers" title="Permalink to this headline">¶</a></h2>
+<p>You&#8217;ll want a non-ancient version (&gt;=1.6) of Bazaar (check your
+distribution&#8217;s backport repository), and a Launchpad account.</p>
+<p>If you&#8217;ve never used Bazaar before, read <a class="reference external" href="http://doc.bazaar-vcs.org/latest/en/mini-tutorial/index.html">Bazaar in five minutes</a>.</p>
+<p>Configure Bazaar to know who you are:</p>
+<div class="highlight-text"><div class="highlight"><pre>~ $ bzr whoami &quot;Arthur Pewtey &lt;apewtey@example.com&gt;&quot;
+~ $ bzr launchpad-login apewtey
+</pre></div>
+</div>
+<p>Make a Bazaar shared repository to contain all your Ibid branches:</p>
+<div class="highlight-text"><div class="highlight"><pre>~ $ mkdir ~/code/ibid
+~ $ cd ~/code/ibid
+~/code/ibid $ bzr init-repo --1.6 .
+</pre></div>
+</div>
+<p>Check out Ibid trunk:</p>
+<div class="highlight-text"><div class="highlight"><pre>~/code/ibid $ bzr checkout lp:ibid trunk
+</pre></div>
+</div>
+<p>When you wish to create a new branch:</p>
+<div class="highlight-text"><div class="highlight"><pre>~/code/ibid $ bzr update trunk
+~/code/ibid $ bzr branch trunk feature-1234
+</pre></div>
+</div>
+<p>If you want to easily push this to Launchpad, create a
+<tt class="docutils literal"><span class="pre">~/.bazaar/locations.conf</span></tt> with the following contents:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[/home/apewtey/code/ibid]</span>
+<span class="na">pull_location</span> <span class="o">=</span> <span class="s">lp:~apewtey/ibid/</span>
+<span class="na">pull_location:policy</span> <span class="o">=</span> <span class="s">appendpath</span>
+<span class="na">push_location</span> <span class="o">=</span> <span class="s">lp:~apewtey/ibid/</span>
+<span class="na">push_location:policy</span> <span class="o">=</span> <span class="s">appendpath</span>
+<span class="na">public_branch</span> <span class="o">=</span> <span class="s">lp:~apewtey/ibid/</span>
+<span class="na">public_branch:policy</span> <span class="o">=</span> <span class="s">appendpath</span>
+</pre></div>
+</div>
+<p>That will allow you to push your branch to
+<tt class="docutils literal"><span class="pre">lp:~apewtey/ibid/feature-1234</span></tt> by typing:</p>
+<div class="highlight-text"><div class="highlight"><pre>~/code/ibid/feature-1234 $ bzr push
+</pre></div>
+</div>
+<p>To delete a branch, you can simply <tt class="docutils literal"><span class="pre">rm</span> <span class="pre">-r</span></tt> it.</p>
+<p>See also:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://help.launchpad.net/Code">Launchpad code hosting documentation</a></li>
+<li><a class="reference external" href="http://doc.bazaar-vcs.org/latest/en/tutorials/using_bazaar_with_launchpad.html">Using Bazaar with Launchpad</a></li>
+<li><a class="reference external" href="http://doc.bazaar-vcs.org/latest/en/user-guide/">Bazaar User Guide</a></li>
+<li><a class="reference external" href="http://doc.bazaar-vcs.org/latest/en/user-reference/index.html">Bazaar Reference</a></li>
+</ul>
+</div>
+<div class="section" id="running-a-development-ibid">
+<span id="dev-instance"></span><h2>Running a Development Ibid<a class="headerlink" href="#running-a-development-ibid" title="Permalink to this headline">¶</a></h2>
+<p>A full-blown Ibid install is overkill for development and debugging
+cycles.</p>
+<p>Ibid source contains a developer-oriented <tt class="docutils literal"><span class="pre">ibid.ini</span></tt> in the root
+directory.
+This uses SQLite and connects to a South African IRC server.
+If you wish to change it, either remember not to commit this file to
+your branch, or override settings in <tt class="docutils literal"><span class="pre">local.ini</span></tt>, which is ignored by
+Bazaar.</p>
+<p>Ibid can be simply run out of a checkout directory:</p>
+<div class="highlight-text"><div class="highlight"><pre>~/code/ibid/feature-1234 $ scripts/ibid-setup
+</pre></div>
+</div>
+<p>If you won&#8217;t need an administrative account, you can hit <tt class="docutils literal"><span class="pre">^D</span></tt> and
+avoid setting one up.</p>
+<p>Test a specific plugin:</p>
+<div class="highlight-text"><div class="highlight"><pre>~/code/ibid/feature-1234 $ scripts/ibid-plugin pluginname
+</pre></div>
+</div>
+<p>Test with all plugins loaded:</p>
+<div class="highlight-text"><div class="highlight"><pre>~/code/ibid/feature-1234 $ scripts/ibid-plugin -c
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not all plugin features will work in the <tt class="docutils literal"><span class="pre">ibid-plugin</span></tt> environment.
+In particular, anything relying on source-interaction or timed
+callbacks (such as many of the games).
+Also, all permissions are granted.</p>
+</div>
+<p>If <tt class="docutils literal"><span class="pre">ibid-plugin</span></tt> isn&#8217;t sufficient for your debugging needs, you can
+launch a normal Ibid by running:</p>
+<div class="highlight-text"><div class="highlight"><pre>~/code/ibid/feature-1234 $ twistd -n ibid
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Contributing</a><ul>
+<li><a class="reference external" href="#bug-reporting">Bug Reporting</a></li>
+<li><a class="reference external" href="#submitting-patches">Submitting Patches</a></li>
+<li><a class="reference external" href="#style-guidelines">Style Guidelines</a><ul>
+<li><a class="reference external" href="#naming-conventions">Naming Conventions</a></li>
+<li><a class="reference external" href="#sources">Sources</a></li>
+<li><a class="reference external" href="#plugins">Plugins</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#bazaar-for-ibid-developers">Bazaar for Ibid Developers</a></li>
+<li><a class="reference external" href="#running-a-development-ibid">Running a Development Ibid</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="tutorial.html"
+                                  title="previous chapter">Ibid Plugin Tutorial</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="api/index.html"
+                                  title="next chapter">API Reference</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/contributing.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/index.html" title="API Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Ibid Plugin Tutorial"
+             >previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

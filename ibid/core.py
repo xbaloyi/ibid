@@ -1,5 +1,4 @@
-# Copyright (c) 2008-2011, Michael Gorven, Jonathan Hitchcock, Stefano Rivera,
-# Max Rabkin
+# Copyright (c) 2008-2010, Michael Gorven, Jonathan Hitchcock, Stefano Rivera
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
 from cgi import parse_qs
@@ -8,13 +7,12 @@ import re
 import logging
 import socket
 from os.path import join, expanduser
-import sys
 
 from twisted.internet import reactor, threads
 from twisted.python.modules import getModule
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exceptions import IntegrityError
 
 import ibid
 from ibid.event import Event
@@ -23,48 +21,43 @@ from ibid.utils import JSONException
 
 import auth
 
-def process(event, log):
-    for processor in ibid.processors:
-        try:
-            processor.process(event)
-        except Exception, e:
-            log.exception(
-                    u'Exception occured in %s processor of %s plugin.\n'
-                    u'Event: %s',
-                    processor.__class__.__name__,
-                    processor.name,
-                    event)
-            event.complain = isinstance(e, (IOError, socket.error, JSONException)) and u'network' or u'exception'
-            event.exc_info = sys.exc_info()
-            event.processed = True
-            if 'session' in event:
-                event.session.rollback()
-                event.session.close()
-                del event['session']
-
-        if 'session' in event and (event.session.dirty or event.session.deleted):
-            try:
-                event.session.commit()
-            except IntegrityError:
-                log.exception(u"Exception occured committing session from the %s processor of %s plugin",
-                        processor.__class__.__name__, processor.name)
-                event.complain = u'exception'
-                event.exc_info = sys.exc_info()
-                event.session.rollback()
-                event.session.close()
-                del event['session']
-
-    if 'session' in event:
-        event.session.close()
-        del event['session']
-
 class Dispatcher(object):
 
     def __init__(self):
         self.log = logging.getLogger('core.dispatcher')
 
     def _process(self, event):
-        process(event, self.log)
+        for processor in ibid.processors:
+            try:
+                processor.process(event)
+            except Exception, e:
+                self.log.exception(
+                        u'Exception occured in %s processor of %s plugin.\n'
+                        u'Event: %s',
+                        processor.__class__.__name__,
+                        processor.name,
+                        event)
+                event.complain = isinstance(e, (IOError, socket.error, JSONException)) and u'network' or u'exception'
+                event.processed = True
+                if 'session' in event:
+                    event.session.rollback()
+                    event.session.close()
+                    del event['session']
+
+            if 'session' in event and (event.session.dirty or event.session.deleted):
+                try:
+                    event.session.commit()
+                except IntegrityError:
+                    self.log.exception(u"Exception occured committing session from the %s processor of %s plugin",
+                            processor.__class__.__name__, processor.name)
+                    event.complain = u'exception'
+                    event.session.rollback()
+                    event.session.close()
+                    del event['session']
+
+        if 'session' in event:
+            event.session.close()
+            del event['session']
 
         log_level = logging.DEBUG
         if event.type == u'clock' and not event.processed:
@@ -235,29 +228,23 @@ class Reloader(object):
                 self.log.exception(u"Couldn't load %s plugin", name)
             return False
 
-        for classname, klass in inspect.getmembers(m, inspect.isclass):
-            if (issubclass(klass, ibid.plugins.Processor)
-                    and klass != ibid.plugins.Processor):
-                if (klass.__name__ not in noload and (klass.__name__ in load
-                        or ((load_all or klass.autoload) and not noload_all))):
-                    self.log.debug("Loading Processor: %s.%s", name,
-                                   klass.__name__)
-                    try:
-                        ibid.processors.append(klass(name))
-                    except Exception, e:
-                        self.log.exception(u"Couldn't instantiate %s "
-                                           u"processor of %s plugin",
-                                           classname, name)
-                        continue
-                else:
-                    self.log.debug("Skipping Processor: %s.%s", name,
-                                   klass.__name__)
-
         try:
-            schema_version_check(ibid.databases['ibid'])
-        except SchemaVersionException, e:
-            self.log.error(u'Tables out of date: %s. Run "ibid-db --upgrade"',
-                           e.message)
+            for classname, klass in inspect.getmembers(m, inspect.isclass):
+                if issubclass(klass, ibid.plugins.Processor) and klass != ibid.plugins.Processor:
+                    if (klass.__name__ not in noload and (klass.__name__ in load
+                            or ((load_all or klass.autoload) and not noload_all))):
+                        self.log.debug("Loading Processor: %s.%s", name, klass.__name__)
+                        ibid.processors.append(klass(name))
+                    else:
+                        self.log.debug("Skipping Processor: %s.%s", name, klass.__name__)
+
+            try:
+                schema_version_check(ibid.databases['ibid'])
+            except SchemaVersionException, e:
+                self.log.error(u'Tables out of date: %s. Run "ibid-db --upgrade"', e.message)
+        except Exception, e:
+            self.log.exception(u"Couldn't instantiate %s processor of %s plugin", classname, name)
+            return False
 
         ibid.processors.sort(key=lambda x: x.priority)
 
@@ -305,26 +292,21 @@ class Reloader(object):
 def regexp(pattern, item):
     return re.search(pattern, item, re.I) and True or False
 
-def sqlite_creator(database, synchronous=True):
+def sqlite_creator(database):
     try:
         from pysqlite2 import dbapi2 as sqlite
     except ImportError:
         from sqlite3 import dbapi2 as sqlite
-
     def connect():
         connection = sqlite.connect(database)
         connection.create_function('regexp', 2, regexp)
-        if not synchronous:
-            connection.execute('PRAGMA synchronous = OFF')
-        connection.execute('PRAGMA foreign_keys=ON')
         return connection
     return connect
 
 class DatabaseManager(dict):
 
-    def __init__(self, check_schema_versions=True, sqlite_synchronous=True):
+    def __init__(self, check_schema_versions=True):
         self.log = logging.getLogger('core.databases')
-        self.sqlite_synchronous = sqlite_synchronous
         for database in ibid.config.databases.keys():
             self.load(database)
 
@@ -342,53 +324,44 @@ class DatabaseManager(dict):
         if uri.startswith('sqlite:///'):
             engine = create_engine('sqlite:///',
                 creator=sqlite_creator(join(ibid.options['base'],
-                        expanduser(uri.replace('sqlite:///', '', 1))),
-                    self.sqlite_synchronous),
+                    expanduser(uri.replace('sqlite:///', '', 1)))),
                 encoding='utf-8', convert_unicode=True,
-                echo=echo
+                assert_unicode=True, echo=echo
             )
 
-        elif uri.startswith(u'mysql://'):
-            if u'?' not in uri:
-                uri += u'?'
-            params = parse_qs(uri.split(u'?', 1)[1])
-            if u'charset' not in params:
-                uri += u'&charset=utf8'
-            if u'sql_mode' not in params:
-                uri += u'&sql_mode=ANSI_QUOTES'
-            # As recommended by SQLAlchemy due to a memory leak:
-            # http://www.sqlalchemy.org/trac/wiki/DatabaseNotes
-            if u'use_unicode' not in params:
-                uri += u'&use_unicode=0'
+        else:
+            if uri.startswith(u'mysql://'):
+                if u'?' not in uri:
+                    uri += u'?charset=utf8'
+                else:
+                    params = parse_qs(uri.split(u'?', 1)[1])
+                    if u'charset' not in params:
+                        uri += u'&charset=utf8'
 
             engine = create_engine(uri, encoding='utf-8',
-                convert_unicode=True, echo=echo,
-                # MySQL closes 8hr old connections:
-                pool_recycle=3600)
+                convert_unicode=True, assert_unicode=True, echo=echo)
 
-            class MySQLModeListener(object):
-                def connect(self, dbapi_con, con_record):
-                    mysql_engine = ibid.config.get('mysql_engine', 'InnoDB')
-                    c = dbapi_con.cursor()
-                    c.execute("SET SESSION default_storage_engine=%s;"
-                              % mysql_engine)
-                    c.execute("SET SESSION time_zone='+0:00';")
-                    c.close()
-            engine.pool.add_listener(MySQLModeListener())
+            if uri.startswith('mysql://'):
+                class MySQLModeListener(object):
+                    def connect(self, dbapi_con, con_record):
+                        dbapi_con.set_sql_mode("ANSI")
+                        mysql_engine = ibid.config.get('mysql_engine', 'InnoDB')
+                        c = dbapi_con.cursor()
+                        c.execute("SET default_storage_engine=%s;" % mysql_engine)
+                        c.execute("SET time_zone='+0:00';")
+                        c.close()
+                engine.pool.add_listener(MySQLModeListener())
 
-        elif uri.startswith('postgres://'):
-            engine = create_engine(uri, encoding='utf-8',
-                convert_unicode=True, assert_unicode=True, echo=echo,
-                # Ensure decoded unicode values are returned:
-                use_native_unicode=False)
+                engine.dialect.use_ansiquotes = True
 
-            class PGSQLModeListener(object):
-                def connect(self, dbapi_con, con_record):
-                    c = dbapi_con.cursor()
-                    c.execute("SET TIME ZONE UTC")
-                    c.close()
+            elif uri.startswith('postgres://'):
+                class PGSQLModeListener(object):
+                    def connect(self, dbapi_con, con_record):
+                        c = dbapi_con.cursor()
+                        c.execute("SET TIME ZONE UTC")
+                        c.close()
 
-            engine.pool.add_listener(PGSQLModeListener())
+                engine.pool.add_listener(PGSQLModeListener())
 
         self[name] = scoped_session(sessionmaker(bind=engine))
 

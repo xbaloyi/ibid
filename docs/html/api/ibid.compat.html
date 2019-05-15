@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ibid.compat – Python Version Compatibility &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="ibid.config – Configuration Files" href="ibid.config.html" />
+    <link rel="prev" title="API Reference" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="ibid.config.html" title="ibid.config – Configuration Files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="API Reference"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-ibid.compat">
+<h1><tt class="xref docutils literal"><span class="pre">ibid.compat</span></tt> &#8211; Python Version Compatibility<a class="headerlink" href="#module-ibid.compat" title="Permalink to this headline">¶</a></h1>
+<p>This module provides compatibility for older Python versions back to
+2.4, allowing the use of some newer features.</p>
+<p>The following modules and functions are available, and should be
+imported from <tt class="xref docutils literal"><span class="pre">ibid.compat</span></tt> rather than elsewhere.</p>
+<div class="section" id="modules">
+<h2>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
+<dl class="describe">
+<dt>
+<tt class="descname">email_utils</tt></dt>
+<dd><p>Standard Python <tt class="xref docutils literal"><span class="pre">email.utils</span></tt>.</p>
+<p>Functions for parsing and formatting e-Mail headers.</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">hashlib</tt></dt>
+<dd><p>Standard Python <tt class="xref docutils literal"><span class="pre">hashlib</span></tt>.</p>
+<p>Cryptographic hash functions.</p>
+<p>On Python 2.4 it won&#8217;t support the SHA-2 functions:
+<tt class="xref docutils literal"><span class="pre">hashlib.sha224()</span></tt>, <tt class="xref docutils literal"><span class="pre">hashlib.sha384()</span></tt> and
+<tt class="xref docutils literal"><span class="pre">hashlib.sha512()</span></tt> &#8211; these will all return <tt class="docutils literal"><span class="pre">'Not</span> <span class="pre">Supported'</span></tt>.</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">json</tt></dt>
+<dd><p>Standard Python <tt class="xref docutils literal"><span class="pre">json</span></tt>, using SimpleJSON on older versions.</p>
+<p>JSON serialisation and parsing library.</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">ElementTree</tt></dt>
+<dd>Standard Python <tt class="xref docutils literal"><span class="pre">xml.etree.cElementTree</span></tt>, using ElementTree on
+older versions.</dd></dl>
+
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ibid.compat.defaultdict">
+<em class="property">class </em><tt class="descclassname">ibid.compat.</tt><tt class="descname">defaultdict</tt><big>(</big><span class="optional">[</span><em>default_factory</em><span class="optional">[</span>, <em>...</em><span class="optional">]</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.compat.defaultdict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard Python <tt class="xref docutils literal"><span class="pre">collections.defaultdict</span></tt>.</p>
+<p>Returns a dict-like-object where all unset values contain the value
+returned by <em>default_factory()</em>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibid.compat.all">
+<tt class="descclassname">ibid.compat.</tt><tt class="descname">all</tt><big>(</big><em>iterable</em><big>)</big><a class="headerlink" href="#ibid.compat.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard Python <a title="ibid.compat.all" class="reference internal" href="#ibid.compat.all"><tt class="xref docutils literal"><span class="pre">all()</span></tt></a>.</p>
+<p>Return <tt class="xref docutils literal"><span class="pre">True</span></tt> if every item in <em>iterable</em> is <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.compat.any">
+<tt class="descclassname">ibid.compat.</tt><tt class="descname">any</tt><big>(</big><em>iterable</em><big>)</big><a class="headerlink" href="#ibid.compat.any" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard Python <a title="ibid.compat.any" class="reference internal" href="#ibid.compat.any"><tt class="xref docutils literal"><span class="pre">any()</span></tt></a>.</p>
+<p>Return <tt class="xref docutils literal"><span class="pre">True</span></tt> if any single item in <em>iterable</em> is <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.compat.strptime">
+<tt class="descclassname">ibid.compat.</tt><tt class="descname">strptime</tt><big>(</big><em>date_string</em>, <em>format</em><big>)</big><a class="headerlink" href="#ibid.compat.strptime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard Python <tt class="xref docutils literal"><span class="pre">datetime.datetime.strptime()</span></tt>.</p>
+<p>Return a <tt class="xref docutils literal"><span class="pre">datetime</span></tt> corrosponding to
+<em>date_string</em>, according to <em>format</em>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.compat.factorial">
+<tt class="descclassname">ibid.compat.</tt><tt class="descname">factorial</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#ibid.compat.factorial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard Python <tt class="xref docutils literal"><span class="pre">math.factorial()</span></tt>.</p>
+<p>Return the factorial of <em>x</em>.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#"><tt class="docutils literal"><span class="pre">ibid.compat</span></tt> &#8211; Python Version Compatibility</a><ul>
+<li><a class="reference external" href="#modules">Modules</a></li>
+<li><a class="reference external" href="#classes">Classes</a></li>
+<li><a class="reference external" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">API Reference</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="ibid.config.html"
+                                  title="next chapter"><tt class="docutils literal"><span class="pre">ibid.config</span></tt> &#8211; Configuration Files</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/api/ibid.compat.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ibid.config.html" title="ibid.config – Configuration Files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="API Reference"
+             >previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

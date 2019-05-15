@@ -1,19 +1,25 @@
-# Copyright (c) 2009-2010, Jeremy Thurgood and Max Rabkin
+# Copyright (c) 2009, Jeremy Thurgood
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
-import ibid
+from twisted.trial import unittest
 import ibid.test
-from ibid.event import Event
 
-class TestAddressed(ibid.test.TestCase):
+# This needs to happen before we import core.
+ibid.test.set_config({
+        u'botname': u'test_ibid',
+        u'plugins': {
+            u'testplugin': {
+                u'names': [u'test_ibid', u'bot', u'ant']
+                },
+            },
+        })
+
+from ibid.event import Event
+from ibid.plugins import core
+
+class TestAddressed(unittest.TestCase):
 
     def setUp(self):
-        super(TestAddressed, self).setUp()
-        ibid.config.botname = u'test_ibid'
-        ibid.config.plugins['testplugin'] = ibid.test.FakeConfig(
-                {'names': [u'test_ibid', u'bot', u'ant']})
-
-        from ibid.plugins import core
         self.processor = core.Addressed(u'testplugin')
 
     def assert_addressed(self, event, addressed, message):

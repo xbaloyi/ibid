@@ -1,0 +1,463 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="index.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="Introduction" href="intro.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>The preferred method of installing a production Ibid is to use the
+packages provided by your distro.
+Ibid is available in
+<a class="reference external" href="http://packages.qa.debian.org/i/ibid.html">Debian</a> (since squeeze)
+and <a class="reference external" href="http://launchpad.net/ubuntu/+source/ibid">Ubuntu</a> (since Lucid).
+Additionally, private backport repositories are available for supported
+stable releases of:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://ibid.omnia.za.net/debian/">Debian (lenny)</a></li>
+<li><a class="reference external" href="https://launchpad.net/~ibid-core/+archive/ppa">Ubuntu (hardy-karmic)</a></li>
+</ul>
+<p>Installing Ibid <a class="reference internal" href="#package-managed"><em>through your distribution&#8217;s package-management
+system</em></a> should give you the least hassles in the long
+run <a class="footnote-reference" href="#yourdistro" id="id2">[1]</a>.</p>
+<p>For plugin-development this will be sufficient, but for <a class="reference external" href="contributing.html#contributing"><em>interaction with the
+Ibid development community</em></a> (i.e. contributing code) or
+drastic internal changes, you will probably want to work <a class="reference internal" href="#from-source"><em>from source</em></a> instead.</p>
+<div class="section" id="prerequisites">
+<span id="id3"></span><h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="python">
+<h3>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h3>
+<p>You&#8217;ll need a sane <a class="reference external" href="http://python.org">Python</a> environment and a few Python
+3rd-party packages, described below.</p>
+<p>We attempt to support all Python 2.x releases &gt;= 2.4.
+However, we&#8217;d recommend the most recent stable 2.x release, as Python memory
+usage has improved and more recent Python releases have been better tested with
+Ibid.
+(We have to go out of our way to test with 2.4...)
+Python 3.x support is off the cards until our dependencies are 3.x capable.</p>
+<p>We expect Ibid to work on most operating systems that can provide Python, but
+only develop and test heavily on Debian and Ubuntu Linux.</p>
+</div>
+<div class="section" id="python-libraries">
+<h3>Python Libraries:<a class="headerlink" href="#python-libraries" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="http://twistedmatrix.com/">Twisted framework</a> (core sources)</li>
+<li>Twisted Words (IRC, XMPP)</li>
+<li><a class="reference external" href="http://wokkel.ik.nu/">Wokkel</a>. (XMPP)</li>
+<li><a class="reference external" href="http://www.sqlalchemy.org/">SQLAlchemy</a> 0.5 preferred, 0.4 compatible.</li>
+<li><a class="reference external" href="http://www.voidspace.org.uk/python/configobj.html">ConfigObj</a> &gt;= 4.7.0</li>
+<li><a class="reference external" href="http://labix.org/python-dateutil">python-dateutil</a></li>
+<li><a class="reference external" href="http://pywebsvcs.sourceforge.net/">SOAPpy</a> <a class="footnote-reference" href="#soappy-install" id="id5">[3]</a></li>
+<li><a class="reference external" href="http://peak.telecommunity.com/DevCenter/setuptools">Setuptools</a></li>
+</ul>
+<p>Many core plugins require the following Web scraping &amp; parsing libraries:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://effbot.org/zone/element-index.htm">ElementTree</a> (only needed for Python 2.4)</li>
+<li><a class="reference external" href="http://code.google.com/p/html5lib/">html5lib</a></li>
+<li><a class="reference external" href="http://www.crummy.com/software/BeautifulSoup/">BeautifulSoup</a></li>
+<li><a class="reference external" href="http://code.google.com/p/simplejson/">SimpleJSON</a> (only needed for Python &lt; 2.6)</li>
+</ul>
+<p>Web source and web services:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://jinja.pocoo.org/">Jinja</a></li>
+</ul>
+<p>Other sources:</p>
+<ul class="simple">
+<li>SILC: <a class="reference external" href="http://www.liquidx.net/pysilc/">pysilc</a></li>
+</ul>
+<p>There are many non-essential plugins that require other libraries or programs,
+they are described in the <a class="reference external" href="plugins.html#plugins"><em>plugin documentation</em></a>.</p>
+</div>
+<div class="section" id="database">
+<h3>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h3>
+<p>Ibid needs a relational database <a class="footnote-reference" href="#db-required" id="id6">[2]</a>.
+MySQL, PostgreSQL, and SQLite are all supported as first-class citizens.
+Using the database-independent backup &amp; restore tool, it is straightforward to
+migrate between database engines at any time.</p>
+</div>
+</div>
+<div class="section" id="database-creation">
+<span id="db-setup"></span><h2>Database Creation<a class="headerlink" href="#database-creation" title="Permalink to this headline">¶</a></h2>
+<p>By default Ibid will use SQLite, which is a perfectly capable database,
+but if you have a MySQL or PostgreSQL server handy, you may prefer to
+use it to save some memory or take advantage of the more powerful
+feature-set.</p>
+<p>If you are using SQLite, you can skip over this section, but for MySQL
+or PostgreSQL, you&#8217;ll need to create a database and DB user before
+running <tt class="docutils literal"><span class="pre">ibid-setup</span></tt>.</p>
+<div class="section" id="mysql">
+<h3>MySQL<a class="headerlink" href="#mysql" title="Permalink to this headline">¶</a></h3>
+<p>Install MySQL. On Debian/Ubuntu:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo aptitude install mysql-server python-mysqldb
+</pre></div>
+</div>
+<p>You&#8217;ll be prompted to set a root password for your server. You should
+probably do that.</p>
+<p>Create a database for your bot:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.
+mysql&gt; CREATE DATABASE joebot CHARSET utf8;
+Query OK, 1 row affected (0.02 sec)
+
+mysql&gt; GRANT ALL PRIVILEGES ON joebot.* TO joebot@localhost IDENTIFIED BY &#39;mysecret&#39;;
+Query OK, 0 rows affected (0.13 sec)
+
+mysql&gt; quit
+Bye
+</pre></div>
+</div>
+<p>In this example, the database is called <tt class="docutils literal"><span class="pre">joebot</span></tt>, the user <tt class="docutils literal"><span class="pre">joebot</span></tt>
+and the password is <tt class="docutils literal"><span class="pre">mysecret</span></tt>, so the DB URL will be:</p>
+<div class="highlight-text"><div class="highlight"><pre>mysql://joebot:mysecret@localhost/joebot
+</pre></div>
+</div>
+</div>
+<div class="section" id="postgresql">
+<h3>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h3>
+<p>Install PostgreSQL.
+You&#8217;ll also need the <tt class="docutils literal"><span class="pre">citext</span></tt> contributed module.
+On Debian/Ubuntu:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo aptitude install postgresql postgresql-contrib python-psycopg2
+</pre></div>
+</div>
+<p>Create a database for your bot:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo -u postgres -i
+postgres@box $ createuser -D -R -S -P joebot
+Enter password for new role:
+Enter it again:
+postgres@box $ createdb -O joebot joebot
+postgres@box $ psql -f /usr/share/postgresql/8.4/contrib/citext.sql joebot
+postgres@box $ logout
+</pre></div>
+</div>
+<p>In this example, the database is called <tt class="docutils literal"><span class="pre">joebot</span></tt> and the user
+<tt class="docutils literal"><span class="pre">joebot</span></tt> if the password were <tt class="docutils literal"><span class="pre">mysecret</span></tt>, the DB URL would be:</p>
+<div class="highlight-text"><div class="highlight"><pre>postgres://joebot:mysecret@localhost/joebot
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="package-managed-installation">
+<span id="package-managed"></span><h2>Package Managed Installation<a class="headerlink" href="#package-managed-installation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="add-the-apt-source">
+<h3>Add the APT source<a class="headerlink" href="#add-the-apt-source" title="Permalink to this headline">¶</a></h3>
+<p>These repositories are only necessary if you are using an old Debian /
+Ubuntu release that doesn&#8217;t include Ibid.</p>
+<dl class="docutils">
+<dt>Debian (lenny):</dt>
+<dd><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">deb</span> <span class="pre">http://ibid.omnia.za.net/debian/</span> <span class="pre">lenny-backports</span> <span class="pre">main</span></tt></div>
+<div class="line">GPG Key: <a class="reference external" href="http://pgp.surfnet.nl:11371/pks/lookup?search=0x6EC0C1E39DEDE92FC8910161450ED9D55EB879CE&amp;op=index">0x5EB879CE</a></div>
+</div>
+</dd>
+<dt>Ubuntu (pre-lucid):</dt>
+<dd><div class="first last line-block">
+<div class="line"><tt class="docutils literal"><span class="pre">deb</span> <span class="pre">http://ppa.launchpad.net/ibid-core/ppa/ubuntu</span> <span class="pre">karmic</span> <span class="pre">main</span></tt></div>
+<div class="line">If you are using a different release to <tt class="docutils literal"><span class="pre">karmic</span></tt>, substitute its name.</div>
+<div class="line">GPG Key: <a class="reference external" href="http://keyserver.ubuntu.com:11371/pks/lookup?search=0xC2D0F8531BBA37930C0D85E3D59F9E8DFD1C44BA&amp;op=index">0xFD1C44BA</a></div>
+</div>
+</dd>
+</dl>
+<p>You can follow <a class="reference external" href="https://launchpad.net/+help/soyuz/ppa-sources-list.html">these instructions</a> or add it from a
+terminal like this:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ echo deb http://ppa.launchpad.net/ibid-core/ppa/ubuntu `lsb_release -cs` main | sudo tee /etc/apt/sources.list.d/ibid.list
+user@box $ sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xFD1C44BA
+user@box $ sudo aptitude update
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-ibid">
+<h3>Install Ibid<a class="headerlink" href="#install-ibid" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo aptitude install ibid
+</pre></div>
+</div>
+<p>Now you should probably create a user for your bot to run as.
+While every effort is made to ensure that your bot won&#8217;t do naughty things, we
+can&#8217;t guarantee that there is no way to exploit it.
+If you are feeling adventurous, skip down to creating a bot directory:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo adduser --disabled-login ibid
+</pre></div>
+</div>
+<p>Switch to the bot user:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo -u ibid -i
+ibid@box $
+</pre></div>
+</div>
+<p>If you are going to be using MySQL or PostgreSQL <a class="reference internal" href="#db-setup"><em>set up your
+database now</em></a>.</p>
+<p>Then you&#8217;ll need to create a directory for your bot to live in:</p>
+<div class="highlight-text"><div class="highlight"><pre>ibid@box $ mkdir botdir
+ibid@box $ cd botdir
+</pre></div>
+</div>
+<p>Now you can install the bot:</p>
+<div class="highlight-text"><div class="highlight"><pre>ibid@box $ ibid-setup
+Couldn&#39;t load core plugin: botname
+Couldn&#39;t load knab plugin: No module named perl
+Couldn&#39;t load trac plugin: argument of type &#39;NoneType&#39; is not iterable
+What would you like to call your bot? joebot
+Please enter the full URL of the database to use, or just press Enter for an SQLite database.
+Database URL:
+Please enter the details for the primary source. Press Enter for the default option.
+Source name (e.g. freenode, atrum, jabber): freenode
+Server: irc.freenode.net
+Port:
+Source type (irc or jabber): irc
+Default channels to join (comma separated): #myawesomechannel
+Nick/JID: joeuser
+Password: [my password]
+Account created with admin permissions
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This will throw out some harmless errors (about plugins that you don&#8217;t have
+pre-requisites for).</p>
+</div>
+<p>Load any factpacks you desire (in this case, common greetings):</p>
+<div class="highlight-text"><div class="highlight"><pre>ibid@box $ ibid-factpack greetings.json
+</pre></div>
+</div>
+<p>Now would be the time to configure your bot.
+But for now, let&#8217;s just get it running:</p>
+<div class="highlight-text"><div class="highlight"><pre>ibid@box $ twistd -n ibid
+</pre></div>
+</div>
+<p>You should see copious debugging output, and the bot should log into your IRC
+channel.</p>
+</div>
+</div>
+<div class="section" id="installation-from-source">
+<span id="from-source"></span><h2>Installation From Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h2>
+<p>If you want to do any development, or install from trunk or a specific branch,
+you&#8217;ll need <a class="reference external" href="http://bazaar-vcs.org/">Bazaar</a> installed.</p>
+<p>Firstly, you need the dependencies <a class="reference internal" href="#prerequisites"><em>listed above</em></a>.
+We recommend a recent release of Debian/Ubuntu Linux, and the instructions are
+tailored for such.
+If you use something else, you&#8217;ll have to interpolate.</p>
+<p>Install the required python modules.
+You can use another DB, but we default to SQLite.
+If you are not using Debian/Ubuntu or would prefer to have these
+dependencies installed in a virtualenv, you can skip this step:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo aptitude install bzr python-configobj python-sqlalchemy \
+  python-twisted python-beautifulsoup python-celementtree \
+  python-html5lib python-setuptools python-simplejson \
+  python-soappy python-jinja python-dateutil python-virtualenv
+</pre></div>
+</div>
+<p>Create a user to run your bot as:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo adduser --disabled-login ibid
+</pre></div>
+</div>
+<p>Create a virtualenv to install Ibid to:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ virtualenv ve
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This isn&#8217;t strictly necessary as Ibid can run out of a source
+checkout for development.
+But for long-term deployments it is sensible to separate the source
+from the botdir.</p>
+</div>
+<p>Checkout the latest version of Ibid (instead of this, you could extract a
+source tarball):</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo -u ibid -i
+ibid@box $ bzr branch lp:ibid
+ibid@box $ cd ibid
+</pre></div>
+</div>
+<p>Install Ibid:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box $ . ~/ve/bin/activate
+user@box $ ./setup.py install --no-dependencies
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you didn&#8217;t install the packages listed in the first step, you&#8217;ll
+have to remove <tt class="docutils literal"><span class="pre">--no-dependencies</span></tt> so setuptools can do its magic.</p>
+</div>
+<p>If you are going to be using MySQL or PostgreSQL <a class="reference internal" href="#db-setup"><em>set up your
+database now</em></a>.</p>
+<p>Then you&#8217;ll need to create a directory for your bot to live in:</p>
+<div class="highlight-text"><div class="highlight"><pre>ibid@box $ mkdir ~/botdir
+ibid@box $ cd ~/botdir
+</pre></div>
+</div>
+<p>Set up your bot:</p>
+<div class="highlight-text"><div class="highlight"><pre>ibid@box $ ibid-setup
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This will throw out some harmless errors (about plugins that you don&#8217;t have
+pre-requisites for).</p>
+</div>
+<p>If you haven&#8217;t created a configuration file, it will ask you to give the bot a
+name, and describe the first source.
+A source is an IRC network, jabber, or SILC network.</p>
+<p>It&#8217;ll ask you to enter the details of the first administrative account.
+Assuming you will be connecting the bot to an IRC server, enter your nick, the
+network&#8217;s name, and a password (e.g. &#8220;joebloggs&#8221;, &#8220;freenode&#8221;, &#8220;s3cr3tpass&#8221;).</p>
+<p>Load any factpacks you desire (in this case, common greetings):</p>
+<div class="highlight-text"><div class="highlight"><pre>ibid@box $ ibid-factpack ~/ibid/factpack/greetings.json
+</pre></div>
+</div>
+<p>Runi your bot:</p>
+<div class="highlight-text"><div class="highlight"><pre>ibid@box $ twistd -n ibid
+</pre></div>
+</div>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="yourdistro" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td>Your distribution of choice not listed here?
+That&#8217;s probably because none of the current Ibid developers use it.
+Why not <a class="reference external" href="contributing.html#contributing"><em>chip in</em></a> and help us package Ibid for you.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="db-required" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[2]</a></td><td>If you don&#8217;t need user-accounts (and many other features),
+the database code could be removed.
+It&#8217;d probably be quite a bit of work, though.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="soappy-install" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[3]</a></td><td>SOAPpy can be hard to install, so we have debian
+packages and eggs to help. <tt class="docutils literal"><span class="pre">setup.py</span></tt> knows where to look.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Installation</a><ul>
+<li><a class="reference external" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference external" href="#python">Python</a></li>
+<li><a class="reference external" href="#python-libraries">Python Libraries:</a></li>
+<li><a class="reference external" href="#database">Database</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#database-creation">Database Creation</a><ul>
+<li><a class="reference external" href="#mysql">MySQL</a></li>
+<li><a class="reference external" href="#postgresql">PostgreSQL</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#package-managed-installation">Package Managed Installation</a><ul>
+<li><a class="reference external" href="#add-the-apt-source">Add the APT source</a></li>
+<li><a class="reference external" href="#install-ibid">Install Ibid</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#installation-from-source">Installation From Source</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="intro.html"
+                                  title="previous chapter">Introduction</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="configuration.html"
+                                  title="next chapter">Configuration</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/install.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

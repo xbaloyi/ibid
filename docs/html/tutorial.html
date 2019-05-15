@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Ibid Plugin Tutorial &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="index.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="Factoids" href="factoids.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="contributing.html" title="Contributing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="factoids.html" title="Factoids"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ibid-plugin-tutorial">
+<h1>Ibid Plugin Tutorial<a class="headerlink" href="#ibid-plugin-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>This will guide you through the process of creating an Ibid plugin so
+you can add your own features.</p>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-an-ibid">
+<h3>Install an Ibid<a class="headerlink" href="#install-an-ibid" title="Permalink to this headline">¶</a></h3>
+<p>Before we can write a plugin, we need a <a class="reference external" href="install.html#installation"><em>working base Ibid install</em></a>.</p>
+</div>
+<div class="section" id="the-testing-environment">
+<h3>The Testing Environment<a class="headerlink" href="#the-testing-environment" title="Permalink to this headline">¶</a></h3>
+<p>Rather than working on a live bot and having to reload modules a lot,
+when developing for Ibid, we usually use <tt class="docutils literal"><span class="pre">ibid-plugin</span></tt>, a minimal,
+fast, testing environment.</p>
+<p>It looks like this:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box ~/botdir $ ibid-plugin
+... Messages about loading plugins
+Query: hello
+Response: Huh?
+Query: help
+Response: I can help you with: looking things up.
+Ask me &quot;help me with ...&quot; for more details.
+Query: help me with looking things up
+Response: I use the following features for looking things up: help
+Ask me &quot;how do I use ...&quot; for more details.
+</pre></div>
+</div>
+<p>To exit, press <tt class="docutils literal"><span class="pre">Control-C</span></tt> or <tt class="docutils literal"><span class="pre">Control-D</span></tt>.</p>
+<p>As you can see, there is almost nothing loaded.
+It can&#8217;t even respond to &#8220;hello&#8221;, the code for that is in the
+<em>factoid</em> module.
+If you want to load the <em>factoid</em> module,
+you can tell <tt class="docutils literal"><span class="pre">ibid-plugin</span></tt> to load it on startup, by
+adding it as a parameter:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box ~/botdir $ ibid-plugin factoid
+... Messages about loading plugins
+Query: hi
+Response: good morning
+</pre></div>
+</div>
+<p>Well, actually there are some administrative functions, which don&#8217;t show
+up in the overall help.
+You could have asked the bot to &#8220;load factoid&#8221;:</p>
+<div class="highlight-text"><div class="highlight"><pre>Query: help admin
+Response: I use the following features for administrative functions:
+config, core, die, help, plugins, sources and version
+Ask me &quot;how do I use ...&quot; for more details.
+Query: how do I use plugins
+Response: Lists, loads and unloads plugins. You can use it like this:
+  list plugins
+  (load|unload|reload) &lt;plugin|processor&gt;
+Query: load factoid
+DEBUG:core.reloader:Loading Processor: factoid.Forget
+DEBUG:core.reloader:Loading Processor: factoid.Get
+DEBUG:core.reloader:Loading Processor: factoid.Modify
+DEBUG:core.reloader:Loading Processor: factoid.Search
+DEBUG:core.reloader:Loading Processor: factoid.Set
+DEBUG:core.reloader:Loading Processor: factoid.StaticFactoid
+DEBUG:core.reloader:Loading Processor: factoid.Utils
+DEBUG:core.reloader:Loaded factoid plugin
+Response: factoid reloaded
+Query: hi
+Response: howsit
+</pre></div>
+</div>
+<p>Try talking to it too fast, it&#8217;ll start ignoring you.
+This makes sense for a real chat channel, but not debugging.
+You can tell the <em>ignorer</em> not to load by adding it as a parameter
+followed by <tt class="docutils literal"><span class="pre">-</span></tt>:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box ~/botdir $ ibid-plugin factoid core.Ignore-
+</pre></div>
+</div>
+<p>If you want all the normal modules loaded, you can add the <tt class="docutils literal"><span class="pre">-c</span></tt>
+option, but it&#8217;ll take quite a bit longer to start up:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box ~/botdir $ ibid-plugin -c
+... Screenfulls of messages
+Query: hello
+Response: sup
+</pre></div>
+</div>
+<p>Play with that a bit.
+It isn&#8217;t exactly the same as a full bot, there are a few things that
+won&#8217;t work, but it&#8217;s good enough for testing.
+Some examples:</p>
+<ul class="simple">
+<li>Karma, because it&#8217;s disabled for private conversations by default.
+You can switch to public mode with <tt class="docutils literal"><span class="pre">-p</span></tt>.</li>
+<li>The games, because they require some advanced Twisted functionality
+(as well as other channel members).</li>
+</ul>
+</div>
+</div>
+<div class="section" id="ibid-theory">
+<h2>Ibid Theory<a class="headerlink" href="#ibid-theory" title="Permalink to this headline">¶</a></h2>
+<p>Ibid is divided into two main parts (excluding the Ibid core code):
+<em>Sources</em> and <em>Plugins</em>.</p>
+<p>The sources speak IRC, Jabber, e-Mail, etc.
+There is one source for each network that the bot is connected to.
+When someone says something in an IRC channel, the IRC source for that
+network will create an <em>Event</em>.
+The event is passed to the plugins, which each take a turn to look at it
+and decide if they want to do anything.
+If a plugin decides to reply, the event is sent back to the source to
+dispatch the reply.</p>
+<p>Events are also used for, private messages from users to the bot, people
+joining and leaving channels, etc. but most plugins don&#8217;t need to deal
+with anything except message events, directed to the bot.</p>
+<p>Ibid comes with some plugins for pre- and post-processing of events
+(such as logging), and some for features.</p>
+</div>
+<div class="section" id="plugin-writing-time">
+<h2>Plugin Writing Time<a class="headerlink" href="#plugin-writing-time" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="processors-and-handlers">
+<h3>Processors and Handlers<a class="headerlink" href="#processors-and-handlers" title="Permalink to this headline">¶</a></h3>
+<p>Let&#8217;s see what that looks like in practice.
+Here&#8217;s a simple hello world plugin.
+Create a directory called <tt class="docutils literal"><span class="pre">ibid/plugins</span></tt> in the botdir.
+In that directory, create a file called <tt class="docutils literal"><span class="pre">tutorial.py</span></tt> with the
+following contents:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ibid.plugins</span> <span class="kn">import</span> <span class="n">Processor</span><span class="p">,</span> <span class="n">handler</span>
+
+<span class="k">class</span> <span class="nc">HelloWorld</span><span class="p">(</span><span class="n">Processor</span><span class="p">):</span>
+   <span class="nd">@handler</span>
+   <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+      <span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Hello World!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A plugin can contain multiple <em>Processor</em>s.
+Each one is a self-contained part of the event handling chain.
+It can register an interest in certain types of event, or a specific
+place in the chain, but for most plugins the defaults are sufficient.</p>
+<p>Inside the processor, any functions decorated with <a title="ibid.plugins.handler" class="reference external" href="api/ibid.plugins.html#ibid.plugins.handler"><tt class="xref docutils literal"><span class="pre">&#64;handler</span></tt></a> will get a chance to look at the event.
+If it choses to add a response to the event, the response will be
+returned to the user.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Ibid uses unicode strings and to catch mistakes, you&#8217;ll get a warning
+if you pass a normal string as a response, so try to get in the habit
+of using unicode.</p>
+</div>
+<p>Test it out, anything you say to the bot should provoke a &#8220;Hello World!&#8221;
+response:</p>
+<div class="highlight-text"><div class="highlight"><pre>user@box ~/botdir $ ibid-plugin tutorial
+... Messages about loading plugins
+Query: hello
+Response: Hello World!
+</pre></div>
+</div>
+<p>Now, you could include code inside your handler to determine if you want
+to reply to a message or not, but must of the time you are after
+messages that look like something particular, so we have another
+decorator, <a title="ibid.plugins.match" class="reference external" href="api/ibid.plugins.html#ibid.plugins.match"><tt class="xref docutils literal"><span class="pre">&#64;match()</span></tt></a>, to help you:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ibid.plugins</span> <span class="kn">import</span> <span class="n">Processor</span><span class="p">,</span> <span class="n">match</span>
+
+<span class="k">class</span> <span class="nc">HelloWorld</span><span class="p">(</span><span class="n">Processor</span><span class="p">):</span>
+    <span class="nd">@match</span><span class="p">(</span><span class="s">r&#39;^hello$&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Hello World!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Match takes a regular expression as a parameter, and will only run your
+handler function if the regex matches the event&#8217;s message.
+In this case, it&#8217;ll only fire if you say &#8220;hello&#8221;.
+It&#8217;ll ignore trailing punctuation and whitespace, as that&#8217;s removed by
+the <tt class="xref docutils literal"><span class="pre">core.Strip</span></tt> plugin.</p>
+</div>
+<div class="section" id="match-groups">
+<h3>Match Groups<a class="headerlink" href="#match-groups" title="Permalink to this headline">¶</a></h3>
+<p>Time for a more complex example, a multiple dice roller, you can add it
+as another Processor in your tutorial plugin:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+
+<span class="kn">from</span> <span class="nn">ibid.plugins</span> <span class="kn">import</span> <span class="n">Processor</span><span class="p">,</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">ibid.utils</span> <span class="kn">import</span> <span class="n">human_join</span>
+
+<span class="k">class</span> <span class="nc">Dice</span><span class="p">(</span><span class="n">Processor</span><span class="p">):</span>
+    <span class="nd">@match</span><span class="p">(</span><span class="s">r&#39;^roll\s+(\d+)\s+dic?e$&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">multithrow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="n">throws</span> <span class="o">=</span> <span class="p">[</span><span class="nb">unicode</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">)]</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;I threw </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">human_join</span><span class="p">(</span><span class="n">throws</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>If you still have an <tt class="docutils literal"><span class="pre">ibid-plugin</span></tt> open you can &#8220;reload tutorial&#8221; to
+reload your plugin.</p>
+<p>Any match groups you put in the regex will be passed to the handler as
+arguments, in this case the number of dice to throw.
+If you want brackets without creating a match group, you can use the
+non-grouping syntax <tt class="docutils literal"><span class="pre">(?:</span> <span class="pre">)</span></tt>.</p>
+<p><a title="Helper functions for plugins" class="reference external" href="api/ibid.utils.html#module-ibid.utils"><tt class="xref docutils literal"><span class="pre">ibid.utils</span></tt></a> contains many handy helper functions.
+<a title="ibid.utils.human_join" class="reference external" href="api/ibid.utils.html#ibid.utils.human_join"><tt class="xref docutils literal"><span class="pre">human_join()</span></tt></a> is the equivalent of <tt class="docutils literal"><span class="pre">u',</span>
+<span class="pre">'.join()</span></tt>, with an &#8220;and&#8221; before the last item.</p>
+<p><a title="ibid.event.Event.addresponse" class="reference external" href="api/ibid.event.html#ibid.event.Event.addresponse"><tt class="xref docutils literal"><span class="pre">addresponse()</span></tt></a> takes a second
+argument for string substitution.  If you want to substitute multiple
+items, use the dict syntax:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Nobody </span><span class="si">%(verb)s</span><span class="s"> the </span><span class="si">%(noun)s</span><span class="s">!&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="s">&#39;verb&#39;</span><span class="p">:</span> <span class="s">u&#39;expects&#39;</span><span class="p">,</span>
+    <span class="s">&#39;noun&#39;</span><span class="p">:</span> <span class="s">u&#39;Spanish Inquisition&#39;</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<p>At the moment you&#8217;ll see that your plugin doesn&#8217;t appear in the help
+system.
+You can fix that with a little more code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+
+<span class="kn">from</span> <span class="nn">ibid.plugins</span> <span class="kn">import</span> <span class="n">Processor</span><span class="p">,</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">ibid.utils</span> <span class="kn">import</span> <span class="n">human_join</span>
+
+<span class="n">features</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">features</span><span class="p">[</span><span class="s">&#39;dice&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">u&#39;Throws multiple dice&#39;</span><span class="p">,</span>
+    <span class="s">&#39;categories&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;fun&#39;</span><span class="p">,),</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">Dice</span><span class="p">(</span><span class="n">Processor</span><span class="p">):</span>
+    <span class="n">usage</span> <span class="o">=</span> <span class="s">u&#39;roll &lt;number&gt; dice&#39;</span>
+
+    <span class="n">feature</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;dice&#39;</span><span class="p">,)</span>
+
+    <span class="nd">@match</span><span class="p">(</span><span class="s">r&#39;^roll\s+(\d+)\s+dic?e$&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">multithrow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="n">throws</span> <span class="o">=</span> <span class="p">[</span><span class="nb">unicode</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">)]</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;I threw </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">human_join</span><span class="p">(</span><span class="n">throws</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The module-level <tt class="docutils literal"><span class="pre">features</span></tt> dict specifies descriptions for features
+(given with the usage description) and categories to place the feature
+in.
+You can find a list of available categories in <tt class="xref docutils literal"><span class="pre">ibid.categories</span></tt>
+and if necessary add a category to it from your module.</p>
+<p>The Processor can be linked to a feature by specifying it in the
+<cite>feature</cite> attribute.
+Usage for the Processor&#8217;s functions (in BNF) goes in a <cite>usage</cite>
+attribute.
+&#8220;reload tutorial&#8221; and you should see &#8220;dice&#8221; appear in the features for
+&#8220;fun stuff&#8221;.</p>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>Ibid has a configuration system that may be useful for your plugin.
+Configuration values can be set at runtime or by editing <tt class="docutils literal"><span class="pre">ibid.ini</span></tt>.</p>
+<p>Let&#8217;s make the number of dice sides be configurable:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+
+<span class="kn">from</span> <span class="nn">ibid.config</span> <span class="kn">import</span> <span class="n">IntOption</span>
+<span class="kn">from</span> <span class="nn">ibid.plugins</span> <span class="kn">import</span> <span class="n">Processor</span><span class="p">,</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">ibid.utils</span> <span class="kn">import</span> <span class="n">human_join</span>
+
+<span class="k">class</span> <span class="nc">Dice</span><span class="p">(</span><span class="n">Processor</span><span class="p">):</span>
+    <span class="n">sides</span> <span class="o">=</span> <span class="n">IntOption</span><span class="p">(</span><span class="s">&#39;sides&#39;</span><span class="p">,</span> <span class="s">&#39;Number of sides to each die&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
+    <span class="nd">@match</span><span class="p">(</span><span class="s">r&#39;^roll\s+(\d+)\s+dic?e$&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">multithrow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="n">throws</span> <span class="o">=</span> <span class="p">[</span><span class="nb">unicode</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sides</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number</span><span class="p">)]</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;I threw </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">human_join</span><span class="p">(</span><span class="n">throws</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><a title="ibid.config.IntOption" class="reference external" href="api/ibid.config.html#ibid.config.IntOption"><tt class="xref docutils literal"><span class="pre">IntOption()</span></tt></a> creates a configuration
+value called <tt class="docutils literal"><span class="pre">plugins.tutorial.sides</span></tt> with a default value of 6.
+There are also configuration helpers for other data types.</p>
+<p>If you merge the following into your <tt class="docutils literal"><span class="pre">ibid.ini</span></tt>, you can change to 21
+sided dice:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[plugins]</span>
+   <span class="k">[[tutorial]]</span>
+      <span class="na">sides</span> <span class="o">=</span> <span class="s">21</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="style">
+<h2>Style<a class="headerlink" href="#style" title="Permalink to this headline">¶</a></h2>
+<p>Now that you&#8217;ve got all the basics, here are some other things you
+should know about writing Ibid plugins.</p>
+<div class="section" id="error-handling">
+<h3>Error Handling<a class="headerlink" href="#error-handling" title="Permalink to this headline">¶</a></h3>
+<p>You might have noticed that we haven&#8217;t said anything about error
+handling.
+That was intentional.
+All exceptions in plugins are caught at the dispatcher level, and an
+appropriate response will be returned to the user, as well as tracebacks
+logged.
+The only time you should worry about handling errors is if you can
+recover gracefully or you want to return a specific response (such as an
+explanation).</p>
+</div>
+<div class="section" id="responses">
+<h3>Responses<a class="headerlink" href="#responses" title="Permalink to this headline">¶</a></h3>
+<p>The general Ibid style is that the bot should be something people can
+relate to, not too mechanical.
+So many Ibid responses are playful and maybe a little snarky.
+Also, many responses aren&#8217;t static, but rather chosen from a list of 3
+or 4 at random (<tt class="xref docutils literal"><span class="pre">random.choice()</span></tt> is good for that).</p>
+</div>
+</div>
+<div class="section" id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
+<p>That&#8217;s it, you are now more than able to write your own Ibid plugins.
+Please <a class="reference external" href="contributing.html#contributing"><em>send us</em></a> anything you write, it may be
+useful for other people too.</p>
+<p>We wished there was more documentation we could point you at, to help
+you, but it hasn&#8217;t been written yet.
+So, read some modules to see what&#8217;s there, and stick your nose in our
+IRC channel for help.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Ibid Plugin Tutorial</a><ul>
+<li><a class="reference external" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference external" href="#install-an-ibid">Install an Ibid</a></li>
+<li><a class="reference external" href="#the-testing-environment">The Testing Environment</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#ibid-theory">Ibid Theory</a></li>
+<li><a class="reference external" href="#plugin-writing-time">Plugin Writing Time</a><ul>
+<li><a class="reference external" href="#processors-and-handlers">Processors and Handlers</a></li>
+<li><a class="reference external" href="#match-groups">Match Groups</a></li>
+<li><a class="reference external" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#configuration">Configuration</a></li>
+<li><a class="reference external" href="#style">Style</a><ul>
+<li><a class="reference external" href="#error-handling">Error Handling</a></li>
+<li><a class="reference external" href="#responses">Responses</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="factoids.html"
+                                  title="previous chapter">Factoids</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="contributing.html"
+                                  title="next chapter">Contributing</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/tutorial.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contributing.html" title="Contributing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="factoids.html" title="Factoids"
+             >previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

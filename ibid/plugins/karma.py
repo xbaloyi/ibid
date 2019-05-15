@@ -1,16 +1,14 @@
-# Copyright (c) 2009-2010, Michael Gorven, Stefano Rivera, Dominic Cleal
+# Copyright (c) 2009-2010, Michael Gorven, Stefano Rivera
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
 from datetime import datetime
 import re
 import logging
 
-from ibid.compat import any
 from ibid.config import BoolOption, IntOption, ListOption
 from ibid.db import IbidUnicode, DateTime, Integer, Table, Column, Base, \
                     VersionedSchema
 from ibid.plugins import Processor, match, handler, authorise
-from ibid.utils import plural
 
 features = {'karma': {
     'description': u'Keeps track of karma for people and things.',
@@ -52,8 +50,8 @@ class Karma(Base):
         self.time = datetime.utcnow()
 
 class Set(Processor):
-    usage = u'<subject>(++|--|==| ftw| ftl) [[reason]]'
-    features = ('karma',)
+    usage = u'<subject> (++|--|==|ftw|ftl) [[reason]]'
+    feature = ('karma',)
 
     # Clashes with morse & math
     priority = 510
@@ -62,9 +60,9 @@ class Set(Processor):
 
     increase = ListOption('increase',
                           'Suffixes which indicate increased karma',
-                          ('++', ' ftw'))
+                          ('++', 'ftw'))
     decrease = ListOption('decrease', 'Suffixes which indicate decreased karma',
-                          ('--', ' ftl'))
+                          ('--', 'ftl'))
     neutral = ListOption('neutral', 'Suffixes which indicate neutral karma',
                          ('==',))
     reply = BoolOption('reply', 'Acknowledge karma changes', False)
@@ -74,34 +72,15 @@ class Set(Processor):
                            " which a karma won't be forgotten", 0)
 
     def setup(self):
-        # When not addressed, match karma changes in any text
-        if self.addressed:
-            matchpat = r'^(.+?)\s*(%s)\s*(?:[[{(]+\s*(.+?)\s*[\]})]+)?$'
-        else:
-            matchpat = r'(\S*\w\S*)(%s)(?:$|[\s,;\.\?!])'
-
-        self.increase_reg = self.regex_tokens(self.increase)
-        self.decrease_reg = self.regex_tokens(self.decrease)
-        self.neutral_reg = self.regex_tokens(self.neutral)
-
         self.set.im_func.pattern = re.compile(
-                matchpat % '|'.join(
-                    self.increase_reg + self.decrease_reg + self.neutral_reg
-                ), re.I | re.UNICODE | re.DOTALL)
-
-    def regex_tokens(self, tokens):
-        """ Turn configured tokens into regex versions """
-        return [re.escape(t).replace(r'\ ', r'\s+') for t in tokens]
-
-    def match_operators(self, roperators, adjust):
-        return any(re.match(r, adjust) for r in roperators)
+                r'^(.+?)\s*(%s)\s*(?:[[{(]+\s*(.+?)\s*[\]})]+)?$' % '|'.join(
+                    re.escape(token) for token
+                    in self.increase + self.decrease + self.neutral
+                ), re.I)
 
     @handler
     @authorise(fallthrough=False)
-    def set(self, event, subject, adjust, reason=None):
-        if reason is None:
-            reason = event['message']['clean']
-
+    def set(self, event, subject, adjust, reason):
         if self.public and not event.public:
             event.addresponse(u'Karma must be done in public')
             return
@@ -113,14 +92,14 @@ class Set(Processor):
         if not karma:
             karma = Karma(subject)
 
-        if self.match_operators(self.increase_reg, adjust.lower()):
+        if adjust.lower() in self.increase:
             if subject.lower() == event.sender['nick'].lower():
                 event.addresponse(u"You can't karma yourself!")
                 return
             karma.changes += 1
             karma.value += 1
             change = u'Increased'
-        elif self.match_operators(self.decrease_reg, adjust.lower()):
+        elif adjust.lower() in self.decrease:
             karma.changes += 1
             karma.value -= 1
             change = u'Decreased'
@@ -133,25 +112,21 @@ class Set(Processor):
 
             event.session.delete(karma)
         else:
-            event.session.add(karma)
+            event.session.save_or_update(karma)
         event.session.commit()
 
         log.info(u"%s karma for '%s' by %s/%s (%s) because: %s",
                 change, subject, event.account, event.identity, event.sender['connection'], reason)
 
         if self.reply:
-            event.addresponse(u'%(subject)s now has %(value)s %(points)s of karma', {
-                'subject': subject,
-                'value': karma.value,
-                'points': plural(karma.value, "point", "points"),
-            })
+            event.addresponse(True)
         else:
             event.processed = True
 
 class Get(Processor):
     usage = u"""karma for <subject>
     [reverse] karmaladder"""
-    features = ('karma',)
+    feature = ('karma',)
 
     @match(r'^karma\s+(?:for\s+)?(.+)$')
     def handle_karma(self, event, subject):
@@ -168,24 +143,17 @@ class Get(Processor):
 
     @match(r'^(reverse\s+)?karmaladder$')
     def ladder(self, event, reverse):
-        karmas = event.session.query(Karma)
-        if reverse:
-            karmas = karmas.order_by(Karma.value.asc())
-        else:
-            karmas = karmas.order_by(Karma.value.desc())
-        karmas = karmas.limit(30).all()
-
+        karmas = event.session.query(Karma) \
+                .order_by(reverse and Karma.value.asc() or Karma.value.desc()) \
+                .limit(30).all()
         if karmas:
-            event.addresponse(u', '.join(
-                u'%s: %s (%s)'
-                % (karmas.index(karma), karma.subject, karma.value)
-                for karma in karmas))
+            event.addresponse(', '.join(['%s: %s (%s)' % (karmas.index(karma), karma.subject, karma.value) for karma in karmas]))
         else:
             event.addresponse(u"I don't really care about anything")
 
 class Forget(Processor):
     usage = u'forget karma for <subject> [[reason]]'
-    features = ('karma',)
+    feature = ('karma',)
 
     # Clashes with factoid
     priority = -10

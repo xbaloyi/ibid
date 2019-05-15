@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Factoids &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="index.html" />
+    <link rel="up" title="Plugins" href="plugins.html" />
+    <link rel="next" title="Ibid Plugin Tutorial" href="tutorial.html" />
+    <link rel="prev" title="Plugins" href="plugins.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Ibid Plugin Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugins"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="plugins.html" accesskey="U">Plugins</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="factoids">
+<h1>Factoids<a class="headerlink" href="#factoids" title="Permalink to this headline">¶</a></h1>
+<p>Factoids are one of the most important Ibid plugins.
+They are what give a bot most of its personality, and after a few years
+on IRC, it can expect to pick up a few thousand of them from its users.</p>
+<p>While it can store simple factoids like:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span>Ibid is an awesome bot written in Python
+<span class="nt">&lt;ibid&gt; </span>If you say so
+<span class="nt">&lt;Alice&gt; </span>Ibid
+<span class="nt">&lt;ibid&gt; </span>Ibid is an awesome bot written in Python
+</pre></div>
+</div>
+<p>It can also allow for some basic behaviour programming:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span>slap $arg is &lt;action&gt;slaps $1 and runs for his life
+<span class="nt">&lt;ibid&gt; </span>Got it
+<span class="nt">&lt;Alice&gt; </span>slap Bob
+<span class="k">* </span><span class="gi">ibid slaps Bob and runs for his life</span>
+</pre></div>
+</div>
+<div class="section" id="basics">
+<h2>Basics<a class="headerlink" href="#basics" title="Permalink to this headline">¶</a></h2>
+<p>Factoids start out pretty basic, as a way of the bot remembering things,
+such as:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> Ibid is an awesome bot framework
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> One learns a new thing every day
+</pre></div>
+</div>
+<p>Now I can ask him about that:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> what is ibid?
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Ibid is an awesome bot framework
+</pre></div>
+</div>
+<p>Or even:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> Ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Ibid is an awesome bot framework
+</pre></div>
+</div>
+<p>They can also store multiple values. On retrieval, a value is picked at
+random:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> Ibid is also your father
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> I&#39;ll remember that
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> Ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> ibid is your father
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> Ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> ibid is an awesome bot framework
+</pre></div>
+</div>
+<p>You can request a specific one:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> Ibid /frame/
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> ibid is an awesome bot framework
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> literal ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> 1: is an awesome bot framework, 2: is your father
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> Ibid #2
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> ibid is your father
+</pre></div>
+</div>
+</div>
+<div class="section" id="fancy-factoids">
+<h2>Fancy factoids<a class="headerlink" href="#fancy-factoids" title="Permalink to this headline">¶</a></h2>
+<p>Factoids don&#8217;t just have to be like a dictionary, they can have some
+basic behaviour attached.
+This example also shows how you can trivially replace factoids (assuming you
+have permission to do so):</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> hi is &lt;reply&gt;Hi there
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> One learns a new thing every day
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> hi
+<span class="nt">&lt;ibid&gt; </span>Hi there
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> no, hi is &lt;action&gt;waves
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Got it
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> hi
+<span class="k"> * </span><span class="gi">ibid waves</span>
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> no, hi is &lt;reply&gt;Hello $who
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> If you say so
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> hi
+<span class="nt">&lt;ibid&gt; </span>Hello Alice
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">$who</span></tt> substitutes the speaker&#8217;s name. Other substitutions possible are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">$channel</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">$year</span></tt>, <tt class="docutils literal"><span class="pre">$month</span></tt>, <tt class="docutils literal"><span class="pre">$day</span></tt>, <tt class="docutils literal"><span class="pre">$hour</span></tt>, <tt class="docutils literal"><span class="pre">$minute</span></tt>, <tt class="docutils literal"><span class="pre">$second</span></tt>,
+<tt class="docutils literal"><span class="pre">$date</span></tt>, <tt class="docutils literal"><span class="pre">$time</span></tt>, <tt class="docutils literal"><span class="pre">$dow</span></tt>, <tt class="docutils literal"><span class="pre">$unixtime</span></tt></li>
+</ul>
+<p>And factoids can have multiple names. Our greeting only responds to &#8220;hi&#8221;, it
+should respond to more greetings:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> hello is the same as hi
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Yessir
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> good day is the same as hi
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Alrighty
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> good day
+<span class="nt">&lt;ibid&gt; </span>Hello Alice
+</pre></div>
+</div>
+<p>Finally, factoids can take basic arguments:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> slap $arg is &lt;action&gt;slaps $1
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Got it
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> slap Alice
+<span class="k"> * </span><span class="gi">ibid slaps Alice</span>
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> run from $arg to $arg is &lt;action&gt;starts running at $1 and stops at $2
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> One learns a new thing every day
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> run from here to there
+<span class="k"> * </span><span class="gi">ibid starts running at here and stops at there</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="searching">
+<h2>Searching<a class="headerlink" href="#searching" title="Permalink to this headline">¶</a></h2>
+<p>Factoids aren&#8217;t very useful if we can&#8217;t remember what they are called:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> search slap
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> slap $arg [1]
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> search father
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Ibid [2]
+</pre></div>
+</div>
+<p>The first example tells us about a factoid mentioning slap.
+The second shows what happens when a multi-valued factoid is found. The
+result we are after may be one of two values, so we can&#8217;t simply say
+&#8220;<tt class="docutils literal"><span class="pre">ibid:</span> <span class="pre">ibid</span></tt>&#8220;, we should rather use say:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> ibid /father/
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Ibid is your father
+</pre></div>
+</div>
+<p>You can specify which part of the factoid you are searching in:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> search for values containing awesome
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Ibid [2]
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> search for names containing awesome
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> I couldn&#39;t find anything with that name
+</pre></div>
+</div>
+</div>
+<div class="section" id="modification">
+<h2>Modification<a class="headerlink" href="#modification" title="Permalink to this headline">¶</a></h2>
+<p>Factoids aren&#8217;t set in stone.
+While they can be replaced with &#8220;<tt class="docutils literal"><span class="pre">no,</span> <span class="pre">name</span> <span class="pre">is</span> <span class="pre">newvalue</span></tt>&#8220;, sometimes
+you just want to make a small change:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Ibid is an awesome bot framework
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> ibid += , written in python
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Pattern matches multiple factoids, please be more specific
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> ibid /awesome/ += , written in python
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Done
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> ibid /awesome/
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Ibid is an awesome bot framework, written in python
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> ibid /python/ ~= s/awesome //
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Yessir
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> ibid /python/
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Ibid is an bot framework, written in python
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The replacement is a simple search &amp; replace.
+If you want to use a regular expression, you must add an <tt class="docutils literal"><span class="pre">r</span></tt> flag.
+E.g. s/fo+/bar/r</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">i</span></tt> and <tt class="docutils literal"><span class="pre">g</span></tt> flags are also supported, as is the <tt class="docutils literal"><span class="pre">y/x/y/</span></tt>
+operation.</p>
+</div>
+<p>And finally, removal:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> forget ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Sure
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> What?
+</pre></div>
+</div>
+<p>Or only one of the values:</p>
+<div class="highlight-irc"><div class="highlight"><pre><span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> literal ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> 0: is your father, 1: is an awesome bot framework
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> forget ibid /framework/
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> Sure
+<span class="nt">&lt;Alice&gt; </span><span class="na">ibid:</span> literal ibid
+<span class="nt">&lt;ibid&gt; </span><span class="na">Alice:</span> 0: is your father
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Factoids</a><ul>
+<li><a class="reference external" href="#basics">Basics</a></li>
+<li><a class="reference external" href="#fancy-factoids">Fancy factoids</a></li>
+<li><a class="reference external" href="#searching">Searching</a></li>
+<li><a class="reference external" href="#modification">Modification</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="plugins.html"
+                                  title="previous chapter">Plugins</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="tutorial.html"
+                                  title="next chapter">Ibid Plugin Tutorial</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/factoids.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Ibid Plugin Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugins"
+             >previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="plugins.html" >Plugins</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

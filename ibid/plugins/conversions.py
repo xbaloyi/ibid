@@ -9,10 +9,9 @@ import unicodedata
 
 import ibid
 from ibid.plugins import Processor, handler, match
-from ibid.compat import any, defaultdict, ElementTree
 from ibid.config import Option
-from ibid.utils import (cacheable_download, file_in_path, get_country_codes,
-                        human_join, unicode_output, generic_webservice)
+from ibid.utils import file_in_path, get_country_codes, human_join, \
+                       unicode_output, generic_webservice
 from ibid.utils.html import get_html_parse_tree
 
 features = {}
@@ -27,7 +26,7 @@ class BaseConvert(Processor):
     [convert] ascii <text> to base <number>
     [convert] <sequence> from base <number> to ascii"""
 
-    features = ('base',)
+    feature = ('base',)
 
     abbr_named_bases = {
             "hex": 16,
@@ -174,8 +173,7 @@ class BaseConvert(Processor):
             'base': self._base_name(base_to),
         })
 
-        if base_to == 64 and any(True for plugin in ibid.processors
-                if 'base64' in getattr(plugin, 'features', [])):
+        if base_to == 64 and [True for plugin in ibid.processors if getattr(plugin, 'feature', None) == 'base64']:
             event.addresponse(u'If you want a base64 encoding, use the "base64" feature')
 
     @handler
@@ -215,8 +213,7 @@ class BaseConvert(Processor):
             return
 
         event.addresponse(u'That is "%s"', output)
-        if base_from == 64 and any(True for plugin in ibid.processors
-                if 'base64' in getattr(plugin, 'features', [])):
+        if base_from == 64 and [True for plugin in ibid.processors if getattr(plugin, 'feature', None) == 'base64']:
             event.addresponse(u'If you want a base64 encoding, use the "base64" feature')
 
 features['units'] = {
@@ -225,7 +222,7 @@ features['units'] = {
 }
 class Units(Processor):
     usage = u'convert [<value>] <unit> to <unit>'
-    features = ('units',)
+    feature = ('units',)
     priority = 10
 
     units = Option('units', 'Path to units executable', 'units')
@@ -306,157 +303,93 @@ class Currency(Processor):
     usage = u"""exchange <amount> <currency> for <currency>
     currencies for <country>"""
 
-    features = ('currency',)
+    feature = ('currency',)
 
     currencies = {}
     country_codes = {}
 
     def _load_currencies(self):
-        iso4127_file = cacheable_download(
-                'http://www.currency-iso.org/dam/downloads/table_a1.xml',
-                'conversions/iso4217.xml')
-        document = ElementTree.parse(iso4127_file)
-        # Code -> [Countries..., Currency Name, post-decimal digits]
+        etree = get_html_parse_tree(
+                'http://www.xe.com/iso4217.php', headers = {
+                    'User-Agent': 'Mozilla/5.0',
+                    'Referer': 'http://www.xe.com/',
+                }, treetype='etree')
+
+        tbl_main = [x for x in etree.getiterator('table') if x.get('class') == 'tbl_main'][0]
+
         self.currencies = {}
-        # Country -> Code
-        self.country_currencies = {}
-        self.country_codes = get_country_codes()
-        # Non-currencies:
-        non_currencies = set(('BOV CLF COU MXV '
-                              'UYI XSU XUA '     # Various Fund codes
-                              'CHE CHW '         # Swiss WIR currencies
-                              'USN USS '         # US Dollar fund codes
-                              'XAG XAU XPD XPT ' # Metals
-                              'XBA XBB XBC XBD ' # Euro Bond Market
-                              'XDR XTS XXX '     # Other specials
-                             ).split())
-        no_country_codes = set(('Saint Martin',
-                                'Virgin Islands (Us)',
-                                'Virgin Islands (British)',))
-        accociated_all_countries = True
-        for currency in document.getiterator('CcyNtry'):
-            if not currency.findtext('Ccy'):
-                continue
-            code = currency.findtext('Ccy').strip()
-            name = currency.findtext('CcyNm').strip()
-            place = currency.findtext('CtryNm').strip().title()
-            try:
-                minor_units = int(currency.findtext('CcyMnrUnts').strip())
-            except ValueError:
-                minor_units = 2
-            if code == '' or code in non_currencies:
-                continue
-            # Fund codes
-            if re.match(r'^Zz[0-9]{2}', place, re.UNICODE):
-                continue
-            if code in self.currencies:
-                self.currencies[code][0].append(place)
-            else:
-                self.currencies[code] = [[place], name, minor_units]
-            if place in no_country_codes:
-                continue
-            if (code[:2] in self.country_codes
-                        and code[:2] not in self.country_currencies):
-                    self.country_currencies[code[:2]] = code
-                    continue
-
-            # Countries with (alternative names)
-            swapped_place = None
-            m = re.match(r'^(.+?)\s+\((.+)\)$', place)
-            if m is not None:
-                swapped_place = '%s (%s)' % (m.group(2), m.group(1))
-
-            for ccode, country in self.country_codes.iteritems():
-                country = country.title()
-                if country in (place, swapped_place):
-                    if ccode not in self.country_currencies:
-                        self.country_currencies[ccode] = code
-                    break
-            else:
-                log.info(u"ISO4127 parsing: Can't identify %s as a known "
-                         u"country", place)
-                accociated_all_countries = False
+        for tbl_sub in tbl_main.getiterator('table'):
+            if tbl_sub.get('class') == 'tbl_sub':
+                for tr in tbl_sub.getiterator('tr'):
+                    code, place = [x.text for x in tr.getchildren()]
+                    name = u''
+                    if not place:
+                        place = u''
+                    if u',' in place[1:-1]:
+                        place, name = place.split(u',', 1)
+                    place = place.strip()
+                    if code in self.currencies:
+                        currency = self.currencies[code]
+                        # Are we using another country's currency?
+                        if place != u'' and name != u'' and (currency[1] == u'' or currency[1].rsplit(None, 1)[0] in place
+                                or (u'(also called' in currency[1] and currency[1].split(u'(', 1)[0].rsplit(None, 1)[0] in place)):
+                            currency[0].insert(0, place)
+                            currency[1] = name.strip()
+                        else:
+                            currency[0].append(place)
+                    else:
+                        self.currencies[code] = [[place], name.strip()]
 
         # Special cases for shared currencies:
-        self.currencies['EUR'][0].append(u'Euro Member Countries')
-        self.currencies['XAF'][0].append(u"Communaut\xe9 financi\xe8re d'Afrique")
-        self.currencies['XCD'][0].append(u'Organisation of Eastern Caribbean States')
-        self.currencies['XOF'][0].append(u'Coop\xe9ration financi\xe8re en Afrique centrale')
-        self.currencies['XPF'][0].append(u'Comptoirs Fran\xe7ais du Pacifique')
-        return accociated_all_countries
+        self.currencies['EUR'][0].insert(0, u'Euro Member Countries')
+        self.currencies['XOF'][0].insert(0, u'Communaut\xe9 Financi\xe8re Africaine')
+        self.currencies['XOF'][1] = u'Francs'
 
-    def resolve_currency(self, name, rough=True, plural_recursion=False):
+    strip_currency_re = re.compile(r'^[\.\s]*([\w\s]+?)s?$', re.UNICODE)
+
+    def _resolve_currency(self, name, rough=True):
         "Return the canonical name for a currency"
-
-        if not self.currencies:
-            self._load_currencies()
 
         if name.upper() in self.currencies:
             return name.upper()
 
-        # Strip leading dots (.TLD)
-        m = re.match(r'^[\.\s]*(.+)$', name, re.UNICODE)
+        m = self.strip_currency_re.match(name)
+
         if m is None:
             return False
+
         name = m.group(1).lower()
 
-        # TLD:
-        if rough and len(name) == 2 and name.upper() in self.country_currencies:
-            return self.country_currencies[name.upper()]
+        # TLD -> country name
+        if rough and len(name) == 2 and name.upper() in self.country_codes:
+           name = self.country_codes[name.upper()].lower()
 
         # Currency Name
         if name == u'dollar':
             return "USD"
-        if name == u'pound':
-            return "GBP"
-        for code, (places, currency, units) in self.currencies.iteritems():
-            if name == currency.lower():
-                return code
-            if name.title() in places:
+
+        name_re = re.compile(r'^(.+\s+)?\(?%ss?\)?(\s+.+)?$' % name, re.I | re.UNICODE)
+        for code, (places, currency) in self.currencies.iteritems():
+            if name_re.match(currency) or [True for place in places if name_re.match(place)]:
                 return code
 
-        # There are also country names in country_codes:
-        for code, place in self.country_codes.iteritems():
-            if name == place.lower() and code in self.country_currencies:
-                return self.country_currencies[code]
-
-        # Second pass, not requiring exact match:
-        if rough:
-            for code, (places, currency, units) in self.currencies.iteritems():
-                if name in currency.lower():
-                    return code
-                if any(name in place.lower() for place in places):
-                    return code
-
-            for code, place in self.country_codes.iteritems():
-                if name in place.lower() and code in self.country_currencies:
-                    return self.country_currencies[code]
-
-        # Maybe it's a plural?
-        if name.endswith('s') and not plural_recursion:
-            return self.resolve_currency(name[:-1], rough, True)
         return False
 
     @match(r'^(exchange|convert)\s+([0-9.]+)\s+(.+)\s+(?:for|to|into)\s+(.+)$')
     def exchange(self, event, command, amount, frm, to):
+        if not self.currencies:
+            self._load_currencies()
+
+        if not self.country_codes:
+            self.country_codes = get_country_codes()
+
         rough = command.lower() == 'exchange'
 
-        canonical_frm = self.resolve_currency(frm, rough)
-        canonical_to = self.resolve_currency(to, rough)
+        canonical_frm = self._resolve_currency(frm, rough)
+        canonical_to = self._resolve_currency(to, rough)
         if not canonical_frm or not canonical_to:
             if rough:
-                event.addresponse(
-                    u"Sorry, I don't know about a currency for %s",
-                    (not canonical_frm and frm or to))
-            return
-        if canonical_frm == canonical_to:
-            event.addresponse(
-                u"Um, that's the same currency. Tell you what, "
-                u"I can offer you my special rate of 0.5 %(currency)s for "
-                u"each %(code)s you sell me.", {
-                    'currency': self.currencies[canonical_frm][1],
-                    'code': canonical_frm,
-            })
+                event.addresponse(u"Sorry, I don't know about a currency for %s", (not canonical_frm and frm or to))
             return
 
         data = generic_webservice(
@@ -471,15 +404,15 @@ class Currency(Processor):
                     u"Whoops, looks like I couldn't make that conversion")
             return
 
-        converted = float(amount) * float(last_trade_rate)
         event.addresponse(
-            u'%(fresult)s %(fcode)s (%(fcurrency)s) = '
-            u'%(tresult)s %(tcode)s (%(tcurrency)s) '
+            u'%(fresult)s %(fcode)s (%(fcountry)s %(fcurrency)s) = '
+            u'%(tresult)0.2f %(tcode)s (%(tcountry)s %(tcurrency)s) '
             u'(Last trade rate: %(rate)s, Bid: %(bid)s, Ask: %(ask)s)', {
                 'fresult': amount,
-                'tresult': u'%0.*f' % (self.currencies[canonical_to][2],
-                                       converted),
+                'tresult': float(amount) * float(last_trade_rate),
+                'fcountry': self.currencies[canonical_frm][0][0],
                 'fcurrency': self.currencies[canonical_frm][1],
+                'tcountry': self.currencies[canonical_to][0][0],
                 'tcurrency': self.currencies[canonical_to][1],
                 'fcode': canonical_frm,
                 'tcode': canonical_to,
@@ -488,139 +421,25 @@ class Currency(Processor):
                 'ask': ask,
             })
 
-    @match(r'^(exchange|convert)\s+(.+)\s+([0-9.]+)\s+(?:for|to|into)\s+(.+)$')
-    def exchange_reversed(self, event, command, amount, frm, to):
-        self.exchange(event, command, frm, amount, to)
-
-
     @match(r'^(?:currency|currencies)\s+for\s+(?:the\s+)?(.+)$')
     def currency(self, event, place):
         if not self.currencies:
             self._load_currencies()
 
-        results = defaultdict(list)
-        for code, (c_places, name, digits) in self.currencies.iteritems():
-            for c_place in c_places:
-                if re.search(place, c_place, re.I):
-                    results[c_place].append(u'%s (%s)' % (name, code))
+        search = re.compile(place, re.I)
+        results = []
+        for code, (places, name) in self.currencies.iteritems():
+            for place in places:
+                if search.search(place):
+                    results.append(u'%s uses %s (%s)' % (place, name, code))
                     break
 
         if results:
-            event.addresponse(human_join(
-                u'%s uses %s' % (place, human_join(currencies))
-                for place, currencies in results.iteritems()
-            ))
+            event.addresponse(human_join(results))
         else:
             event.addresponse(u'No currencies found')
 
 class UnassignedCharacter(Exception): pass
-
-def fix_pinyin_tone(syllable):
-    """Change numeric tones to diacritics in pinyin."""
-    tone = syllable[-1]
-    if tone.isdigit():
-        tone = {'1': u'\u0304', '2': u'\u0301', '3': u'\u030c',
-                '4': u'\u0300'}.get(tone, '')
-        syllable = syllable[:-1]
-        # if there's an A, E or O then it takes the mark; in the case of AO, the
-        # mark goes on the A
-        for v in 'AaEeOo':
-            if v in syllable:
-                return unicodedata.normalize('NFC', syllable.replace(v, v+tone))
-        # the mark goes on the second letter of UI and IU
-        for v in ('UI', 'ui' 'IU', 'iu'):
-            if v in syllable:
-                return unicodedata.normalize('NFC', syllable.replace(v, v+tone))
-        # otherwise there was only a single vowel
-        for v in u'IiUuVv' \
-                 u'\N{Latin Capital Letter U With Diaeresis}' \
-                 u'\N{Latin Small Letter U With Diaeresis}':
-            if v in syllable:
-                return unicodedata.normalize('NFC', syllable.replace(v, v+tone))
-
-    return syllable
-
-def html_flatten(soup):
-    text = []
-    for subsoup in soup.contents:
-        if isinstance(subsoup, basestring):
-            text.append(subsoup)
-        else:
-            text.append(html_flatten(subsoup))
-    return ''.join(text)
-    
-class Unihan(object):
-    def __init__(self, char):
-        self.char = char
-        url = 'http://www.unicode.org/cgi-bin/GetUnihanData.pl?'
-        params = {'codepoint': self.char.encode('utf8'),
-                  'useuft8': 'true'}
-        soup = get_html_parse_tree(url + urlencode(params),
-                                            treetype='html5lib-beautifulsoup')
-
-        tables = soup('table', border="1")
-
-        self.data = defaultdict(unicode,
-                                ((html_flatten(td).strip() for td in row('td'))
-                                 for table in tables for row in table('tr')[1:]))
-
-    def pinyin(self):
-        return map(fix_pinyin_tone, self.data['kMandarin'].lower().split())
-
-    def hangul(self):
-        return self.data['kHangul'].split()
-
-    def korean_yale(self):
-        return self.data['kKorean'].lower().split()
-
-    def korean(self):
-        return [u'%s [%s]' % (h, y) for h, y in
-                                    zip(self.hangul(), self.korean_yale())]
-
-    def japanese_on(self):
-        return self.data['kJapaneseOn'].lower().split()
-
-    def japanese_kun(self):
-        return self.data['kJapaneseKun'].lower().split()
-
-    def definition(self):
-        return self.data['kDefinition']
-
-    def variant(self):
-        msgs = []
-        for name in ('simplified', 'traditional'):
-            variants = self.data['k' + name.title() + 'Variant'].split()[1::2]
-            if variants:
-                msgs.append(u'the %(name)s form is %(var)s' %
-                            {'name': name,
-                             'var': human_join(variants, conjunction='or')})
-        return msgs
-
-    def __unicode__(self):
-        msgs = []
-        if self.definition():
-            msgs = [u'it means %s' % self.definition()]
-
-        msgs += self.variant()
-
-        prons = []
-        for reading, lang in ((self.pinyin, 'pinyin'),
-                                (self.korean, 'Korean'),
-                                (self.japanese_on, 'Japanese on'),
-                                (self.japanese_kun, 'Japanese kun')):
-            readings = reading()
-            if readings:
-                prons.append(u'%(readings)s (%(lang)s)' %
-                                {'readings': human_join(readings, conjunction=u'or'), 'lang': lang})
-
-        if prons:
-            msgs.append(u'it is pronounced ' +
-                            human_join(prons, conjunction=u'or'))
-
-        msg =  u'; '.join(msgs)
-        if msg:
-            msg = msg[0].upper() + msg[1:]
-        return msg
 
 features['unicode'] = {
     'description': u'Look up characters in the Unicode database.',
@@ -630,7 +449,7 @@ class UnicodeData(Processor):
     usage = u"""U+<hex code>
     unicode (<character>|<character name>|<decimal code>|0x<hex code>)"""
 
-    features = ('unicode',)
+    feature = ('unicode',)
 
     bidis = {'AL': u'right-to-left Arabic', 'AN': u'Arabic number',
              'B': u'paragraph separator', 'BN': u'boundary neutral',
@@ -660,12 +479,10 @@ class UnicodeData(Processor):
                   'So': u'a Symbol', 'Zl': u'a Line Separator',
                   'Zp': u'a Paragraph Separator', 'Zs': u'a Space Separator'}
 
-    @match(r'^(?:(?:uni(?:code|han)\s+)?U\+|'
-                r'uni(?:code|han)\s+#?0?x)([0-9a-f]+)$|'
-           r'^(?:unicode|unihan|ascii)\s+'
-                r'([0-9a-f]*(?:[0-9][a-f]|[a-f][0-9])[0-9a-f]*)$|'
-           r'^(?:unicode|unihan|ascii)\s+#?(\d{2,})$', simple=False)
-    def unichr(self, event, hexcode, hexcode2, deccode):
+    @match(r'^(?:(?:unicode\s+)?U\+|unicode\s+#?0?x)([0-9a-f]+)$|'
+           r'^(?:unicode|ascii)\s+([0-9a-f]*(?:[0-9][a-f]|[a-f][0-9])[0-9a-f]*)$|'
+           r'^(?:unicode|ascii)\s+#?(\d{2,})$')
+    def unichr (self, event, hexcode, hexcode2, deccode):
         if hexcode or hexcode2:
             code = int(hexcode or hexcode2, 16)
         else:
@@ -684,12 +501,11 @@ class UnicodeData(Processor):
             if deccode:
                 info['code'] += ' (%i)' % code
             event.addresponse(u"U+%(code)s is %(name)s%(example)s, "
-                          u"%(category)s with %(bidi)s directionality"
-                          u"%(unihan)s",
+                          u"%(category)s with %(bidi)s directionality",
                           info)
 
-    @match(r'^uni(?:code|han)\s+(.)$', 'deaddressed', simple=False)
-    def ord(self, event, char):
+    @match(r'^unicode\s+(.)$', 'deaddressed')
+    def ord (self, event, char):
         try:
             info = self.info(char)
         except UnassignedCharacter:
@@ -701,32 +517,30 @@ class UnicodeData(Processor):
             else:
                 info['example'] = 'That'
             event.addresponse(u"%(example)s is %(name)s (U+%(code)s), "
-                              u"%(category)s with %(bidi)s directionality"
-                              u"%(unihan)s",
+                              u"%(category)s with %(bidi)s directionality",
                               info)
 
-    @match(r'uni(?:code|han) ([a-z][a-z0-9 -]+)')
-    def fromname(self, event, name):
+    @match(r'^unicode\s+([a-z][a-z0-9 -]+)$')
+    def fromname (self, event, name):
         try:
-            char = unicodedata.lookup(name.upper())
-        except KeyError:
+            char = eval(ur'u"\N{%s}"' % name.upper())
+        except (SyntaxError, UnicodeError):
             event.addresponse(u"I couldn't find a character with that name")
         else:
             info = self.info(char)
             if info['example']:
                 info['example'] = ' (' + info['example'] + ')'
             event.addresponse(u"%(name)s is U+%(code)s%(example)s, "
-                              u"%(category)s with %(bidi)s directionality"
-                              u"%(unihan)s",
+                              u"%(category)s with %(bidi)s directionality",
                               info)
 
     # Match any string that can't be a character name or a number.
-    @match(r'unicode (.*[^0-9a-z#+\s-].+|.+[^0-9a-z#+\s-].*)', 'deaddressed')
-    def characters(self, event, string):
+    @match(r'^unicode\s+(.*[^0-9a-z#+\s-].+|.+[^0-9a-z#+\s-].*)$', 'deaddressed')
+    def characters (self, event, string):
         event.addresponse(human_join('U+%(code)s %(name)s' % self.info(c)
                                         for c in string))
 
-    def info(self, char):
+    def info (self, char):
         cat = unicodedata.category(char)
         if cat == 'Cn':
             raise UnassignedCharacter
@@ -742,16 +556,8 @@ class UnicodeData(Processor):
         else:
             example = char
 
-        haninfo = u''
-        if 'CJK' in name and 'IDEOGRAPH' in name:
-            unihan = Unihan(char)
-            haninfo = unicode(unihan)
-            if haninfo:
-                haninfo = u'. ' + haninfo + u'.'
-
         return {'code': u'%04X' % ord(char),
                 'name': name.title().replace('Cjk', 'CJK'), 'char': char,
-                'example': example, 'category': catname.lower(), 'bidi': bidi,
-                'unihan': haninfo}
+                'example': example, 'category': catname.lower(), 'bidi': bidi}
 
 # vi: set et sta sw=4 ts=4:

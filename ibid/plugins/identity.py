@@ -29,7 +29,7 @@ class Accounts(Processor):
     usage = u"""create account [<name>]
     delete (my account|account <name>)
     rename (my account|account <name>) to <name>"""
-    features = ('accounts',)
+    feature = ('accounts',)
 
     @match(r'^create\s+account(?:\s+(.+))?$')
     def new_account(self, event, username):
@@ -54,7 +54,7 @@ class Accounts(Processor):
             return
 
         account = Account(username)
-        event.session.add(account)
+        event.session.save_or_update(account)
         event.session.commit()
         log.info(u"Created account %s (%s) by %s/%s (%s)",
                 account.id, account.username, event.account, event.identity, event.sender['connection'])
@@ -64,14 +64,14 @@ class Accounts(Processor):
                     .filter_by(identity=username, source=event.source).first()
             if identity:
                 identity.account_id = account.id
-                event.session.add(identity)
+                event.session.save_or_update(identity)
                 event.session.commit()
                 log.info(u"Attached identity %s (%s on %s) to account %s (%s)",
                         identity.id, identity.identity, identity.source, account.id, account.username)
         else:
             identity = event.session.query(Identity).get(event.identity)
             identity.account_id = account.id
-            event.session.add(identity)
+            event.session.save_or_update(identity)
             event.session.commit()
             log.info(u"Attached identity %s (%s on %s) to account %s (%s)",
                     identity.id, identity.identity, identity.source, account.id, account.username)
@@ -132,7 +132,7 @@ class Accounts(Processor):
         oldname = account.username
         account.username = newname
 
-        event.session.add(account)
+        event.session.save_or_update(account)
         event.session.commit()
         identify_cache.clear()
 
@@ -147,7 +147,7 @@ class Identities(Processor):
     usage = u"""I am <identity> on <source>
     link user <username> to <identity> on <source>
     remove identity <identity> on <source> [from <username>]"""
-    features = ('accounts',)
+    feature = ('accounts',)
     priority = -10
 
     def __init__(self, name):
@@ -183,12 +183,12 @@ class Identities(Processor):
                         return
 
                     account = Account(username)
-                    event.session.add(account)
+                    event.session.save_or_update(account)
 
                     currentidentity = event.session.query(Identity) \
                             .get(event.identity)
                     currentidentity.account_id = account.id
-                    event.session.add(currentidentity)
+                    event.session.save_or_update(currentidentity)
 
                     identify_cache.clear()
 
@@ -250,7 +250,7 @@ class Identities(Processor):
             if not ident:
                 ident = Identity(source, identity)
             ident.account_id = account.id
-            event.session.add(ident)
+            event.session.save_or_update(ident)
             event.session.commit()
 
             identify_cache.clear()
@@ -276,7 +276,7 @@ class Identities(Processor):
             if not identity:
                 identity = Identity(source, user)
             identity.account_id = account_id
-            event.session.add(identity)
+            event.session.save_or_update(identity)
             identify_cache.clear()
 
             del self.tokens[token]
@@ -308,7 +308,7 @@ class Identities(Processor):
             event.addresponse(u"I don't know about that identity")
         else:
             identity.account_id = None
-            event.session.add(identity)
+            event.session.save_or_update(identity)
             event.session.commit()
 
             identify_cache.clear()
@@ -320,7 +320,7 @@ class Identities(Processor):
 
 class Attributes(Processor):
     usage = u'set (my|<account>) <name> to <value>'
-    features = ('accounts',)
+    feature = ('accounts',)
 
     @match(r"^set\s+(my|.+?)(?:\'s)?\s+(.+)\s+to\s+(.+)$")
     def attribute(self, event, username, name, value):
@@ -344,7 +344,7 @@ class Attributes(Processor):
                 return
 
         account.attributes.append(Attribute(name, value))
-        event.session.add(account)
+        event.session.save_or_update(account)
         event.session.commit()
 
         event.addresponse(True)
@@ -354,7 +354,7 @@ class Attributes(Processor):
 
 class Describe(Processor):
     usage = u"list (my|<username>'s) identities"
-    features = ('accounts',)
+    feature = ('accounts',)
 
     @match(r"^list\s+(my|.+?)(?:'?s)?\s+identities$")
     def describe(self, event, username):
@@ -385,7 +385,7 @@ features['summon'] = {
 }
 class Summon(Processor):
     usage = u'summon <person> [via <source>]'
-    features = ('summon',)
+    feature = ('summon',)
     permission = u'summon'
 
     default_source = Option('default_source',
@@ -451,7 +451,7 @@ class Identify(Processor):
     priority = -1600
     addressed = False
     processed = True
-    event_types = (u'message', u'state', u'action', u'notice', u'invite')
+    event_types = (u'message', u'state', u'action', u'notice')
 
     @handler
     def handle(self, event):
@@ -467,7 +467,7 @@ class Identify(Processor):
                     .first()
             if not identity:
                 identity = Identity(event.source, event.sender['id'])
-                event.session.add(identity)
+                event.session.save_or_update(identity)
                 try:
                     event.session.commit()
                     log.info(u'Created identity %s for %s on %s', identity.id, identity.identity, identity.source)
@@ -510,7 +510,7 @@ features['auth'] = {
 }
 class AddAuth(Processor):
     usage = u'authenticate <account> [on source] using <method> [<credential>]'
-    features = ('auth',)
+    feature = ('auth',)
 
     @match(r'^authenticate\s+(.+?)(?:\s+on\s+(.+))?\s+using\s+(\S+)\s+(.+)$')
     def handler(self, event, user, source, method, credential):
@@ -546,7 +546,7 @@ class AddAuth(Processor):
             credential = password
 
         credential = Credential(method, credential, source, account.id)
-        event.session.add(credential)
+        event.session.save_or_update(credential)
         event.session.commit()
         log.info(u"Added %s credential %s for account %s (%s) on %s by account %s",
                 method, credential.credential, account.id, account.username, source, event.account)
@@ -558,7 +558,7 @@ class Permissions(Processor):
     usage = u"""(grant|revoke|remove) <permission> (to|from|on) <username> [when authed]
     permissions [for <username>]
     list permissions"""
-    features = ('auth',)
+    feature = ('auth',)
 
     permission = u'admin'
 
@@ -582,10 +582,6 @@ class Permissions(Processor):
 
         else:
             if not permission:
-                if name.lower() not in self.all_perms():
-                    event.addresponse(u"I don't know about a permission "
-                                      u"called '%s'", name)
-                    return
                 permission = Permission(name)
                 account.permissions.append(permission)
 
@@ -605,7 +601,7 @@ class Permissions(Processor):
                 return
 
             permission.value = value
-            event.session.add(permission)
+            event.session.save_or_update(permission)
 
         event.session.commit()
         ibid.auth.drop_caches()
@@ -633,23 +629,22 @@ class Permissions(Processor):
         permissions = sorted(u'%s%s' % (permission_values[perm.value], perm.name) for perm in account.permissions)
         event.addresponse(u'Permissions: %s', human_join(permissions) or u'none')
 
-    def all_perms(self):
-        permissions = set()
-        for processor in ibid.processors:
-            if hasattr(processor, 'permission'):
-                permissions.add(processor.permission)
-            if hasattr(processor, 'permissions'):
-                for permission in processor.permissions:
-                    permissions.add(permission)
-        return permissions
-
     @match(r'^list\s+permissions$')
     def list_permissions(self, event):
-        event.addresponse(u'Permissions: %s', human_join(sorted(self.all_perms())) or u'none')
+        permissions = []
+        for processor in ibid.processors:
+            if hasattr(processor, 'permission') and getattr(processor, 'permission') not in permissions:
+                permissions.append(getattr(processor, 'permission'))
+            if hasattr(processor, 'permissions'):
+                for permission in getattr(processor, 'permissions'):
+                    if permission not in permissions:
+                        permissions.append(permission)
+
+        event.addresponse(u'Permissions: %s', human_join(sorted(permissions)) or u'none')
 
 class Auth(Processor):
     usage = u'auth <credential>'
-    features = ('auth',)
+    feature = ('auth',)
 
     @match(r'^auth(?:\s+(.+))?$')
     def handler(self, event, password):

@@ -20,15 +20,15 @@ features['actions'] = {
 }
 
 class Actions(Processor):
-    usage = u"""(join|part|leave) [<channel> [on <source>] [using key <key>]]
+    usage = u"""(join|part|leave) [<channel> [on <source>]]
     change nick to <nick> [on <source>]"""
-    features = ('actions',)
+    feature = ('actions',)
 
     permission = 'sources'
 
-    @match(r'^(join|part|leave)(?:\s+(\S*))?(?:\s+on\s+(\S+))?(?:(?:\s+(?:using|with))?\s+(?:key\s+)?(\S+))?$')
+    @match(r'^(join|part|leave)(?:\s+(\S*))?(?:\s+on\s+(\S+))?$')
     @authorise()
-    def channel(self, event, action, channel, source, key):
+    def channel(self, event, action, channel, source):
         action = action.lower()
 
         if not source:
@@ -45,18 +45,11 @@ class Actions(Processor):
         source = ibid.sources[source]
 
         if not hasattr(source, 'join'):
-            event.addresponse(u'I cannot join/part channels on %s', source.name)
+            event.addresponse(u'%s cannot join/part channels', source.name)
             return
 
         if action == 'join':
-            if key:
-                if 'channel key' in source.supports:
-                    source.join(channel, key)
-                else:
-                    event.addresponse(u'I cannot use keys on %s', source.name)
-                    return
-            else:
-                source.join(channel)
+            source.join(channel)
             event.addresponse(u'Joining %s', channel)
         else:
             source.leave(channel)
@@ -76,23 +69,10 @@ class Actions(Processor):
         source = ibid.sources[source]
 
         if not hasattr(source, 'change_nick'):
-            event.addresponse(u'I cannot change nicks on %s', source)
+            event.addresponse(u'%s cannot change nicks', source)
         else:
             source.change_nick(nick)
             event.addresponse(u'Changing nick to %s', nick)
-
-class Invited(Processor):
-    features = ('actions',)
-
-    event_types = ('invite',)
-    permission = 'sources'
-
-    @handler
-    @authorise()
-    def invited(self, event):
-        event.addresponse(u'Joining %s', event.target_channel,
-                            target=event.sender['nick'])
-        ibid.sources[event.source].join(event.target_channel)
 
 class NickServ(Processor):
     event_types = (u'notice',)
@@ -109,8 +89,7 @@ class NickServ(Processor):
     @match(r'^(?:This nickname is registered\.\s+Please choose a different nickname'
             r'|This nickname is registered and protected\.\s+If it is your'
             r'|This nickname is owned by someone else\.\s+Please choose another'
-            r'|This nickname is registered\.\s+Please identify via /msg NickServ identify <password>'
-            r'|If this is your nickname, type \/msg NS)', simple=False)
+            r'|If this is your nickname, type \/msg NS)')
     def auth(self, event):
         if self.is_nickserv(event):
             source_cfg = ibid.config['sources'][event.source]
@@ -118,7 +97,7 @@ class NickServ(Processor):
                 event.addresponse(u'IDENTIFY %s', source_cfg[u'nickserv_password'])
 
     @match(r'^(?:You are now identified for'
-            r'|Password accepted -+ you are now recognized)', simple=False)
+            r'|Password accepted -+ you are now recognized)')
     def success(self, event):
         if self.is_nickserv(event):
             log.info(u'Authenticated with NickServ')
@@ -129,7 +108,7 @@ features['saydo'] = {
 }
 class SayDo(Processor):
     usage = u'(say|do) in <channel> [on <source>] <text>'
-    features = ('saydo',)
+    feature = ('saydo',)
 
     permission = u'saydo'
 
@@ -146,7 +125,7 @@ features['redirect'] = {
 }
 class RedirectCommand(Processor):
     usage = u'redirect [to] <channel> [on <source>] <command>'
-    features = ('redirect',)
+    feature = ('redirect',)
 
     priority = -1200
     permission = u'saydo'
@@ -163,7 +142,7 @@ class RedirectCommand(Processor):
         event.message['clean'] = command
 
 class Redirect(Processor):
-    features = ('redirect',)
+    feature = ('redirect',)
 
     processed = True
     priority = 940

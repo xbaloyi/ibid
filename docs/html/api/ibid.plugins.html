@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ibid.plugins – Plugin registration &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="ibid.utils – Helper functions for plugins" href="ibid.utils.html" />
+    <link rel="prev" title="ibid.event – Events" href="ibid.event.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="ibid.utils.html" title="ibid.utils – Helper functions for plugins"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ibid.event.html" title="ibid.event – Events"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-ibid.plugins">
+<h1><tt class="xref docutils literal"><span class="pre">ibid.plugins</span></tt> &#8211; Plugin registration<a class="headerlink" href="#module-ibid.plugins" title="Permalink to this headline">¶</a></h1>
+<p>Plugins are added to Ibid by placing a module inside <tt class="xref docutils literal"><span class="pre">ibid.plugins</span></tt>.</p>
+<p>To do anything, the plugin must contain classes extending
+<a title="ibid.plugins.Processor" class="reference internal" href="#ibid.plugins.Processor"><tt class="xref docutils literal"><span class="pre">Processor</span></tt></a>.</p>
+<dl class="class">
+<dt id="ibid.plugins.Processor">
+<em class="property">class </em><tt class="descclassname">ibid.plugins.</tt><tt class="descname">Processor</tt><a class="headerlink" href="#ibid.plugins.Processor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for Ibid plugins.
+Processors receive <a title="ibid.event.Event" class="reference external" href="ibid.event.html#ibid.event.Event"><tt class="xref docutils literal"><span class="pre">Events</span></tt></a> and
+(optionally) do things with them.
+Plugins extend Processor to implement features.
+Each Processor occupies a single slot in the event processing queue, and
+can request specific types of events through the class attributes.</p>
+<p>The Processor doesn&#8217;t need to be instantiated, Ibid discovers all
+Processors defined in a plugin at load time.</p>
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.usage">
+<tt class="descname">usage</tt><a class="headerlink" href="#ibid.plugins.Processor.usage" title="Permalink to this definition">¶</a></dt>
+<dd><p>String: each line should be a BNF description of a function in the
+Processor.
+Leading and trailing whitespace in each line is ignored, as are
+empty lines.</p>
+<p>Default: <tt class="xref docutils literal"><span class="pre">None</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.feature">
+<tt class="descname">feature</tt><a class="headerlink" href="#ibid.plugins.Processor.feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>List: Strings naming each feature that this Processor is part of.
+Used in locating &#8220;usage&#8221; strings for on-line documentation.</p>
+<p>The &#8220;description&#8221; string located inside a module-level <cite>features</cite>
+dict maps feature names to help strings.</p>
+<p>Default: empty</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.permission">
+<tt class="descname">permission</tt><a class="headerlink" href="#ibid.plugins.Processor.permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>String: The name of the permission that <a title="ibid.plugins.authorise" class="reference internal" href="#ibid.plugins.authorise"><tt class="xref docutils literal"><span class="pre">authorise()</span></tt></a> methods
+in this Processor require.</p>
+<p>Default: <tt class="xref docutils literal"><span class="pre">None</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.permissions">
+<tt class="descname">permissions</tt><a class="headerlink" href="#ibid.plugins.Processor.permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of Strings: The names of permissions that <a title="ibid.plugins.authorise" class="reference internal" href="#ibid.plugins.authorise"><tt class="xref docutils literal"><span class="pre">authorise()</span></tt></a>
+methods in this Processor check directly (using
+<a title="ibid.plugins.auth_responses" class="reference internal" href="#ibid.plugins.auth_responses"><tt class="xref docutils literal"><span class="pre">auth_responses()</span></tt></a>).</p>
+<p>Default: empty</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.event_types">
+<tt class="descname">event_types</tt><a class="headerlink" href="#ibid.plugins.Processor.event_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuple of <a title="ibid.event.Event" class="reference external" href="ibid.event.html#ibid.event.Event"><tt class="xref docutils literal"><span class="pre">Event</span></tt></a> type strings that the
+Processor wishes to receive.</p>
+<p>Default is only messages: <tt class="docutils literal"><span class="pre">('message',)</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.addressed">
+<tt class="descname">addressed</tt><a class="headerlink" href="#ibid.plugins.Processor.addressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean flag: Whether to only receive events where the bot is
+addressed (i.e.  private chat or addressed in a channel).</p>
+<p>Default: <tt class="xref docutils literal"><span class="pre">True</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.processed">
+<tt class="descname">processed</tt><a class="headerlink" href="#ibid.plugins.Processor.processed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean flag: Whether to receive events that are already marked as
+having been processed.</p>
+<p>Default: <tt class="xref docutils literal"><span class="pre">False</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.priority">
+<tt class="descname">priority</tt><a class="headerlink" href="#ibid.plugins.Processor.priority" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integer: The weight of a Processor.
+Negative numbers put a Processor earlier in the queue, positive
+later.</p>
+<p>Values in the range of -1000 to 1900 are sane, but outside of
+those, events will not behave normally, as pre-processing
+occurs between -2000 and -1000 and logging happens at 1900.</p>
+<p>Default: 0 unless <a title="ibid.plugins.Processor.processed" class="reference internal" href="#ibid.plugins.Processor.processed"><tt class="xref docutils literal"><span class="pre">processed</span></tt></a> is <tt class="xref docutils literal"><span class="pre">True</span></tt>, then 1500</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ibid.plugins.Processor.autoload">
+<tt class="descname">autoload</tt><a class="headerlink" href="#ibid.plugins.Processor.autoload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean flag: Whether to load the plugin or not.</p>
+<p>Default: <tt class="xref docutils literal"><span class="pre">True</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ibid.plugins.Processor.setup">
+<tt class="descname">setup</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#ibid.plugins.Processor.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs once on startup and on every configuration reload.
+Use it for setting up your Processor.</p>
+<p>If you implement it, call <tt class="xref docutils literal"><span class="pre">super()</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ibid.plugins.Processor.shutdown">
+<tt class="descname">shutdown</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#ibid.plugins.Processor.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd>Runs once on shutdown.
+Use it for cleaning up.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.plugins.Processor.process">
+<tt class="descname">process</tt><big>(</big><em>self</em>, <em>event</em><big>)</big><a class="headerlink" href="#ibid.plugins.Processor.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the core of a Processor, where events get dispatched.</p>
+<p><em>event</em> is the <a title="ibid.event.Event" class="reference external" href="ibid.event.html#ibid.event.Event"><tt class="xref docutils literal"><span class="pre">ibid.event.Event</span></tt></a> to process.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Don&#8217;t override this, instead register handlers via
+<a title="ibid.plugins.handler" class="reference internal" href="#ibid.plugins.handler"><tt class="xref docutils literal"><span class="pre">&#64;handler</span></tt></a> or <a title="ibid.plugins.match" class="reference internal" href="#ibid.plugins.match"><tt class="xref docutils literal"><span class="pre">&#64;match()</span></tt></a>.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="decorators">
+<h2>Decorators<a class="headerlink" href="#decorators" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibid.plugins.handler">
+<tt class="descclassname">ibid.plugins.</tt><tt class="descname">handler</tt><big>(</big><big>)</big><a class="headerlink" href="#ibid.plugins.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator that makes a method receive all events.</p>
+<p>First parameter to the wrapped method will be the event object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@handler</span>
+<span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+   <span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Did you see that? I handled an event&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.plugins.match">
+<tt class="descclassname">ibid.plugins.</tt><tt class="descname">match</tt><big>(</big><em>regex</em>, <em>version='clean'</em><big>)</big><a class="headerlink" href="#ibid.plugins.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator that makes a method receive message events matching
+regular expression string <em>regex</em>.</p>
+<p>The <em>regex</em> will be matched, with <tt class="docutils literal"><span class="pre">re.I</span></tt> and <tt class="docutils literal"><span class="pre">re.DOTALL</span></tt> modes.
+You should anchor both sides of it.</p>
+<p>Any match groups in the regex will be passed as parameters to the
+decorated method, after the event object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@match</span><span class="p">(</span><span class="s">r&#39;^(?:foo|bar)\s+(\S+)$&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+   <span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Foo: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">parameter</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><em>version</em> can be set to one of:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">'clean'</span></tt></dt>
+<dd>The default, and almost always what you want.
+The bot name and intervening punctuation are removed from the
+front of the message, if the bot was addressed.
+Trailing punctuation and surrounding whitespace is stripped.</dd>
+<dt><tt class="docutils literal"><span class="pre">'raw'</span></tt></dt>
+<dd>The message as the bot saw it.</dd>
+<dt><tt class="docutils literal"><span class="pre">'deaddressed'</span></tt></dt>
+<dd>The bot name and intervening punctuation are removed from the
+front of the message, if the bot was addressed.</dd>
+<dt><tt class="docutils literal"><span class="pre">'stripped'</span></tt></dt>
+<dd>Trailing punctuation and surrounding whitespace is stripped.</dd>
+</dl>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="38%" />
+<col width="36%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">&nbsp;</th>
+<th class="head">De-address</th>
+<th class="head">Don&#8217;t de-address</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>Strip</td>
+<td><tt class="docutils literal"><span class="pre">'clean'</span></tt></td>
+<td><tt class="docutils literal"><span class="pre">'stripped'</span></tt></td>
+</tr>
+<tr><td>Don&#8217;t strip</td>
+<td><tt class="docutils literal"><span class="pre">'deaddressed'</span></tt></td>
+<td><tt class="docutils literal"><span class="pre">'raw'</span></tt></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.plugins.authorise">
+<tt class="descclassname">ibid.plugins.</tt><tt class="descname">authorise</tt><big>(</big><em>fallthrough=True</em><big>)</big><a class="headerlink" href="#ibid.plugins.authorise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator that requires <a title="ibid.plugins.Processor.permission" class="reference internal" href="#ibid.plugins.Processor.permission"><tt class="xref docutils literal"><span class="pre">Processor.permission</span></tt></a> for the user
+that would trigger this method.</p>
+<p><em>fallthrough</em> sets the failure mode.
+If <tt class="xref docutils literal"><span class="pre">True</span></tt>, the next Procesor will be called in the hope of finding
+another one that&#8217;ll handle it.
+If one is never found or <em>fallthrough</em> is <tt class="xref docutils literal"><span class="pre">False</span></tt>, an error message
+will be returned by <tt class="xref docutils literal"><span class="pre">ibid.plugins.core.Complain</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">permission</span> <span class="o">=</span> <span class="s">&#39;awesome&#39;</span>
+
+<span class="nd">@authorise</span><span class="p">()</span>
+<span class="nd">@match</span><span class="p">(</span><span class="s">r&#39;^do\s+awesome\s+things$&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+   <span class="n">event</span><span class="o">.</span><span class="n">addresponse</span><span class="p">(</span><span class="s">u&#39;Yes sir, you are awesome!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ibid.plugins.periodic">
+<tt class="descclassname">ibid.plugins.</tt><tt class="descname">periodic</tt><big>(</big><span class="optional">[</span><em>interval=0</em>, <em>config_key=None</em>, <em>initial_delay=60</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.plugins.periodic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator that runs the method every <em>interval</em> seconds, from timer
+events.
+The method won&#8217;t be called until <em>initial_delay</em> seconds have passed
+since startup.</p>
+<p>If <em>config_key</em> is set to a string, the <a title="ibid.config.IntOption" class="reference external" href="ibid.config.html#ibid.config.IntOption"><tt class="xref docutils literal"><span class="pre">IntOption</span></tt></a> of that name will be used to set
+<tt class="docutils literal"><span class="pre">interval</span></tt>.
+This is done in <a title="ibid.plugins.Processor.setup" class="reference internal" href="#ibid.plugins.Processor.setup"><tt class="xref docutils literal"><span class="pre">Processor.setup()</span></tt></a> so if you override that, be
+sure to call super.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="other-functions">
+<h2>Other Functions<a class="headerlink" href="#other-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibid.plugins.auth_responses">
+<tt class="descclassname">ibid.plugins.</tt><tt class="descname">auth_responses</tt><big>(</big><em>event</em>, <em>permission</em><big>)</big><a class="headerlink" href="#ibid.plugins.auth_responses" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the event sender has the <em>permission</em> permission, return <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+<p>If not, the event will be marked as having failed authorisation.
+If no other Processor processes the event, an error message will be
+returned by <tt class="xref docutils literal"><span class="pre">ibid.plugins.core.Complain</span></tt>.</p>
+<p>This is used internally by <a title="ibid.plugins.authorise" class="reference internal" href="#ibid.plugins.authorise"><tt class="xref docutils literal"><span class="pre">&#64;authorise()</span></tt></a>, but you
+can call it directly if you need more complex permission handling
+than <a title="ibid.plugins.authorise" class="reference internal" href="#ibid.plugins.authorise"><tt class="xref docutils literal"><span class="pre">&#64;authorise()</span></tt></a> allows for.</p>
+<p>When you use this, you should ensure that <em>permission</em> is listed in
+<a title="ibid.plugins.Processor.permission" class="reference internal" href="#ibid.plugins.Processor.permission"><tt class="xref docutils literal"><span class="pre">Processor.permission</span></tt></a> or <a title="ibid.plugins.Processor.permissions" class="reference internal" href="#ibid.plugins.Processor.permissions"><tt class="xref docutils literal"><span class="pre">Processor.permissions</span></tt></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="rpc">
+<h2>RPC<a class="headerlink" href="#rpc" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ibid.plugins.RPC">
+<em class="property">class </em><tt class="descclassname">ibid.plugins.</tt><tt class="descname">RPC</tt><a class="headerlink" href="#ibid.plugins.RPC" title="Permalink to this definition">¶</a></dt>
+<dd><p>All methods named with the prefix <tt class="docutils literal"><span class="pre">remote_</span></tt> will be exposed via
+Ibid&#8217;s various RPC mechanisms (including the web interface).</p>
+<p>It is common to extend both <a title="ibid.plugins.Processor" class="reference internal" href="#ibid.plugins.Processor"><tt class="xref docutils literal"><span class="pre">Processor</span></tt></a> and RPC in the same
+class.
+The handlers can then wrap around the <tt class="docutils literal"><span class="pre">remote_</span></tt> methods, to provide
+the same features over IM and RPC.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The RPC code is still experimental and not widely used.
+Don&#8217;t be surprised if it doesn&#8217;t work.</p>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#"><tt class="docutils literal"><span class="pre">ibid.plugins</span></tt> &#8211; Plugin registration</a><ul>
+<li><a class="reference external" href="#decorators">Decorators</a></li>
+<li><a class="reference external" href="#other-functions">Other Functions</a></li>
+<li><a class="reference external" href="#rpc">RPC</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="ibid.event.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">ibid.event</span></tt> &#8211; Events</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="ibid.utils.html"
+                                  title="next chapter"><tt class="docutils literal"><span class="pre">ibid.utils</span></tt> &#8211; Helper functions for plugins</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/api/ibid.plugins.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ibid.utils.html" title="ibid.utils – Helper functions for plugins"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ibid.event.html" title="ibid.event – Events"
+             >previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

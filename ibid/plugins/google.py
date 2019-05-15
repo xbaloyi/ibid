@@ -2,7 +2,6 @@
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
 from httplib import BadStatusLine
-from random import choice
 import re
 from urllib import urlencode
 
@@ -24,7 +23,7 @@ class GoogleAPISearch(Processor):
     usage = u"""google[.<tld>] [for] <term>
     googlefight [for] <term> and <term>"""
 
-    features = ('google',)
+    feature = ('google',)
 
     api_key = Option('api_key', 'Your Google API Key (optional)', None)
     referer = Option('referer', 'The referer string to use (API searches)', default_referer)
@@ -90,7 +89,7 @@ class GoogleScrapeSearch(Processor):
     usage = u"""gcalc <expression>
     gdefine <term>"""
 
-    features = ('google',)
+    feature = ('google',)
 
     user_agent = Option('user_agent', 'HTTP user agent to present to Google (for non-API searches)', default_user_agent)
 
@@ -108,7 +107,7 @@ class GoogleScrapeSearch(Processor):
     def calc(self, event, expression):
         tree = self._google_scrape_search(expression)
 
-        nodes = [node for node in tree.findall('.//h2') if node.get('class') == 'r']
+        nodes = [node for node in tree.findall('.//h2/b')]
         if len(nodes) == 1:
             # ElementTree doesn't support inline tags:
             # May return ASCII unless an encoding is specified.
@@ -121,12 +120,9 @@ class GoogleScrapeSearch(Processor):
             node = re.sub(r'(\d)\s+(\d)', lambda x: x.group(1) + x.group(2),
                           node)
             node = decode_htmlentities(node)
-            node = re.sub(r'\s+', ' ', node)
             event.addresponse(node)
         else:
-            event.addresponse(
-                u"%s, Google wasn't interested in calculating that",
-                choice(('Sorry', 'Whoops')))
+            event.addresponse(u'No result')
 
     @match(r'^gdefine\s+(.+)$')
     def define(self, event, term):

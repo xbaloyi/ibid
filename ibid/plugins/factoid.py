@@ -82,7 +82,7 @@ class FactoidName(Base):
                     .filter(FactoidName.name.like('%#_#%%', escape='#')) \
                     .all():
                 row.wild = True
-                self.upgrade_session.add(row)
+                self.upgrade_session.save_or_update(row)
         def upgrade_7_to_8(self):
             self.drop_index(self.table.c._name)
             self.alter_column(Column('name',
@@ -90,15 +90,8 @@ class FactoidName(Base):
                                      key='_name', nullable=False, unique=True,
                                      index=True), force_rebuild=True)
             self.add_index(self.table.c._name)
-        def upgrade_8_to_9(self):
-            for row in self.upgrade_session.query(FactoidName) \
-                    .filter_by(name=u'') \
-                    .all():
-                self.upgrade_session.delete(row)
-                if len(row.factoid.names) == 0:
-                    self.upgrade_session.delete(row.factoid)
 
-    __table__.versioned_schema = FactoidNameSchema(__table__, 9)
+    __table__.versioned_schema = FactoidNameSchema(__table__, 8)
 
     def __init__(self, name, identity_id, factoid_id=None, factpack=None):
         self.name = name
@@ -281,7 +274,7 @@ def get_factoid(session, name, number, pattern, is_regex, all=False,
 
 class Utils(Processor):
     usage = u'literal <name> [( #<from number> | /<pattern>/[r] )]'
-    features = ('factoid',)
+    feature = ('factoid',)
 
     @match(r'^literal\s+(.+?)(?:\s+#(\d+)|\s+(?:/(.+?)/(r?)))?$')
     def literal(self, event, name, number, pattern, is_regex):
@@ -305,7 +298,7 @@ class Utils(Processor):
 class Forget(Processor):
     usage = u"""forget <name> [( #<number> | /<pattern>/[r] )]
     <name> is the same as <other name>"""
-    features = ('factoid',)
+    feature = ('factoid',)
 
     priority = 10
     permission = u'factoid'
@@ -401,7 +394,7 @@ class Forget(Processor):
 
             name = FactoidName(unicode(target), event.identity)
             factoid.names.append(name)
-            event.session.add(factoid)
+            event.session.save_or_update(factoid)
             event.session.commit()
             event.addresponse(True)
             log.info(u"Added name '%s' to factoid %s (%s) by %s/%s (%s)",
@@ -412,7 +405,7 @@ class Forget(Processor):
 
 class Search(Processor):
     usage = u'search [for] [<limit>] [(facts|values) [containing]] (<pattern>|/<pattern>/[r]) [from <start>]'
-    features = ('factoid',)
+    feature = ('factoid',)
 
     limit = IntOption('search_limit', u'Maximum number of results to return', 30)
     default = IntOption('search_default', u'Default number of results to return', 10)
@@ -477,33 +470,23 @@ def _interpolate(message, event):
     utcnow = datetime.utcnow()
     now = utcnow.replace(tzinfo=tzutc()).astimezone(tzlocal())
 
-    substitutions = [(u'who', event.sender['nick']),
-            (u'channel', event.channel),
-            (u'source', event.source),
-            (u'year', unicode(now.year)),
-            (u'month2', u'%02i' % now.month),
-            (u'month1', unicode(now.month)),
-            (u'month', unicode(now.strftime('%B'))),
-            (u'mon', unicode(now.strftime('%b'))),
-            (u'day2', u'%02i' % now.day),
-            (u'day', unicode(now.day)),
-            (u'hour', unicode(now.hour)),
-            (u'minute', unicode(now.minute)),
-            (u'second', unicode(now.second)),
-            (u'date', format_date(utcnow, 'date')),
-            (u'time', format_date(utcnow, 'time')),
-            (u'dow', unicode(now.strftime('%A'))),
-            (u'weekday', unicode(now.strftime('%A'))),
-            (u'unixtime', unicode(utcnow.strftime('%s'))),
-        ]
-
-    for var, expansion in substitutions:
-        message = message.replace(u'$' + var, expansion)
+    message = message.replace(u'$who', event.sender['nick'])
+    message = message.replace(u'$channel', event.channel)
+    message = message.replace(u'$year', unicode(now.year))
+    message = message.replace(u'$month', unicode(now.month))
+    message = message.replace(u'$day', unicode(now.day))
+    message = message.replace(u'$hour', unicode(now.hour))
+    message = message.replace(u'$minute', unicode(now.minute))
+    message = message.replace(u'$second', unicode(now.second))
+    message = message.replace(u'$date', format_date(utcnow, 'date'))
+    message = message.replace(u'$time', format_date(utcnow, 'time'))
+    message = message.replace(u'$dow', unicode(now.strftime('%A')))
+    message = message.replace(u'$unixtime', unicode(utcnow.strftime('%s')))
     return message
 
 class Get(Processor, RPC):
     usage = u'<factoid> [( #<number> | /<pattern>/[r] )]'
-    features = ('factoid',)
+    feature = ('factoid',)
 
     priority = 200
 
@@ -556,7 +539,7 @@ class Get(Processor, RPC):
 class Set(Processor):
     usage = u"""<name> (<verb>|=<verb>=) [also] <value>
     last set factoid"""
-    features = ('factoid',)
+    feature = ('factoid',)
 
     interrogatives = ListOption('interrogatives', 'Question words to strip', default_interrogatives)
     verbs = ListOption('verbs', 'Verbs that split name from value', default_verbs)
@@ -607,7 +590,7 @@ class Set(Processor):
             factoid = Factoid()
             fname = FactoidName(unicode(name), event.identity)
             factoid.names.append(fname)
-            event.session.add(factoid)
+            event.session.save_or_update(factoid)
             event.session.flush()
             log.info(u"Creating factoid %s with name '%s' by %s", factoid.id, fname.name, event.identity)
 
@@ -615,7 +598,7 @@ class Set(Processor):
             value = '%s %s' % (verb, value)
         fvalue = FactoidValue(unicode(value), event.identity)
         factoid.values.append(fvalue)
-        event.session.add(factoid)
+        event.session.save_or_update(factoid)
         event.session.commit()
         self.last_set_factoid=factoid.names[0].name
         log.info(u"Added value '%s' to factoid %s (%s) by %s/%s (%s)",
@@ -638,7 +621,7 @@ class Set(Processor):
 class Modify(Processor):
     usage = u"""<name> [( #<number> | /<pattern>/[r] )] += <suffix>
     <name> [( #<number> | /<pattern>/[r] )] ~= ( s/<regex>/<replacement>/[g][i][r] | y/<source>/<dest>/ )"""
-    features = ('factoid',)
+    feature = ('factoid',)
 
     permission = u'factoid'
     permissions = (u'factoidadmin',)
@@ -676,21 +659,17 @@ class Modify(Processor):
 
             oldvalue = factoid[2].value
             factoid[2].value += suffix
-            event.session.add(factoid[2])
+            event.session.save_or_update(factoid[2])
             event.session.commit()
 
-            log.info(u"Appended '%s' to value %s (%s) of factoid %s (%s) by %s/%s (%s)",
-                    suffix, factoid[2].id, oldvalue, factoid[0].id,
-                    factoid[0].names[0].name, event.account, event.identity,
-                    event.sender['connection'])
+            log.info(u"Appended '%s' to value %s of factoid %s (%s) by %s/%s (%s)",
+                    suffix, factoid[2].id, factoid[0].id, oldvalue, event.account,
+                    event.identity, event.sender['connection'])
             event.addresponse(True)
 
-    @match(r'(?P<name>.+?)'
-           r'(?: #{number:digits}| /(?P<pattern>.+?)/(?P<is_regex>r?))?'
-           r'\s*(?:~=|=~)\s*'
-           r'(?P<operation>[sy](?P<sep>.).+(?P=sep).*(?P=sep)[gir]*)$')
+    @match(r'^(.+?)(?:\s+#(\d+)|\s+/(.+?)/(r?))?\s*(?:~=|=~)\s*([sy](?P<sep>.).+(?P=sep).*(?P=sep)[gir]*)$')
     @authorise(fallthrough=False)
-    def modify(self, event, name, number, pattern, is_regex, operation, sep):
+    def modify(self, event, name, number, pattern, is_regex, operation, separator):
         factoids = get_factoid(event.session, name, number, pattern, is_regex, all=True)
         if len(factoids) == 0:
             if pattern:
@@ -711,7 +690,6 @@ class Modify(Processor):
                 return
 
             # Not very pythonistic, but escaping is a nightmare.
-            separator = sep
             parts = [[]]
             pos = 0
             while pos < len(operation):
@@ -744,27 +722,23 @@ class Modify(Processor):
             op, search, replace, flags = parts
             flags = flags.lower()
             if op == "s":
-                if "r" not in flags:
-                    plain_search = search
-                    search = re.escape(search)
-                    replace = replace.replace('\\', '\\\\')
-                if "i" in flags:
-                    search += "(?i)"
-                try:
-                    if "r" not in flags and not re.search(search, oldvalue):
-                        event.addresponse(u"I couldn't find '%(terms)s' in "
-                                          u"'%(oldvalue)s'. If that was a "
-                                          u"proper regular expression, append "
-                                          u"the 'r' flag", {
-                                                'terms': plain_search,
-                                                'oldvalue': oldvalue,
-                                            })
+                if "r" in flags:
+                    if "i" in flags:
+                        search += "(?i)"
+                    try:
+                        factoid[2].value = re.sub(search, replace, oldvalue, int("g" not in flags))
+                    except:
+                        event.addresponse(u"That operation makes no sense. Try something like s/foo/bar/")
                         return
-
-                    factoid[2].value = re.sub(search, replace, oldvalue, int("g" not in flags))
-                except:
-                    event.addresponse(u"That operation makes no sense. Try something like s/foo/bar/")
-                    return
+                else:
+                    newvalue = oldvalue.replace(search, replace, "g" in flags and -1 or 1)
+                    if newvalue == oldvalue:
+                        event.addresponse(u"I couldn't find '%(terms)s' in '%(oldvalue)s'. If that was a proper regular expression, append the 'r' flag", {
+                            'terms': search,
+                            'oldvalue': oldvalue,
+                        })
+                        return
+                    factoid[2].value = newvalue
 
             elif op == "y":
                 if len(search) != len(replace):
@@ -778,13 +752,11 @@ class Modify(Processor):
                     event.addresponse(u"That operation makes no sense. Try something like y/abcdef/ABCDEF/")
                     return
 
-            event.session.add(factoid[2])
+            event.session.save_or_update(factoid[2])
             event.session.commit()
 
-            log.info(u"Applying '%s' to value %s (%s) of factoid %s (%s) by %s/%s (%s)",
-                     operation, factoid[2].id, oldvalue, factoid[0].id,
-                     factoid[0].names[0].name, event.account, event.identity,
-                     event.sender['connection'])
+            log.info(u"Applying '%s' to value %s of factoid %s (%s) by %s/%s (%s)",
+                    operation, factoid[2].id, factoid[0].id, oldvalue, event.account, event.identity, event.sender['connection'])
 
             event.addresponse(True)
 

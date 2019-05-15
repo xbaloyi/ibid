@@ -18,7 +18,7 @@ features['hash'] = {
 class Hash(Processor):
     usage = u"""(md5|sha1|sha224|sha256|sha384|sha512) <string>
     crypt <string> <salt>"""
-    features = ('hash',)
+    feature = ('hash',)
 
     @match(r'^(md5|sha1|sha224|sha256|sha384|sha512)(?:sum)?\s+(.+?)$')
     def hash(self, event, hash, string):
@@ -35,7 +35,7 @@ features['base64'] = {
 }
 class Base64(Processor):
     usage = u'base(16|32|64) (encode|decode) <string>'
-    features = ('base64',)
+    feature = ('base64',)
 
     @match(r'^b(?:ase)?(16|32|64)\s*(enc|dec)(?:ode)?\s+(.+?)$')
     def base64(self, event, base, operation, string):
@@ -59,7 +59,7 @@ features['rot13'] = {
 }
 class Rot13(Processor):
     usage = u'rot13 <string>'
-    features = ('rot13',)
+    feature = ('rot13',)
 
     @match(r'^rot13\s+(.+)$')
     def rot13(self, event, string):
@@ -72,7 +72,7 @@ features['dvorak'] = {
 }
 class Dvorak(Processor):
     usage = u"""(aoeu|asdf) <text>"""
-    features = ('dvorak',)
+    feature = ('dvorak',)
 
     # List of characters on each keyboard layout
     dvormap = u"""',.pyfgcrl/=aoeuidhtns-;qjkxbmwvz"<>PYFGCRL?+AOEUIDHTNS_:QJKXBMWVZ[]{}|"""
@@ -98,10 +98,10 @@ features['retest'] = {
 }
 class ReTest(Processor):
     usage = u'does <pattern> match <string>'
-    features = ('retest',)
+    feature = ('retest',)
     permission = 'regex'
 
-    @match(r'^does\s+(.+?)\s+match\s+(.+?)$')
+    @match('^does\s+(.+?)\s+match\s+(.+?)$')
     @authorise(fallthrough=False)
     def retest(self, event, regex, string):
         event.addresponse(re.search(regex, string) and u'Yes' or u'No')
@@ -112,7 +112,7 @@ features['morse'] = {
 }
 class Morse(Processor):
     usage = u'morse (text|morsecode)'
-    features = ('morse',)
+    feature = ('morse',)
 
     _table = {
         'A': ".-",

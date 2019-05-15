@@ -1,17 +1,16 @@
 # Copyright (c) 2009-2010, Michael Gorven, Stefano Rivera
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
+import re
 from datetime import datetime
 import logging
-import re
-from threading import Lock
 from urllib2 import URLError
 from urlparse import urljoin
 
 import feedparser
 from html2text import html2text_file
 
-from ibid.config import IntOption, FloatOption
+from ibid.config import IntOption
 from ibid.db import IbidUnicode, IbidUnicodeText, Integer, DateTime, \
                     Table, Column, ForeignKey, Base, VersionedSchema
 from ibid.plugins import Processor, match, authorise, periodic
@@ -92,11 +91,8 @@ class Feed(Base):
 
     def __unicode__(self):
         if self.source is not None and self.target is not None:
-            string = u'%s (notify %s on %s)' % (
+            return u'%s (Notify %s on %s)' % (
                     self.name, self.target, self.source)
-            if self.name in broken_feeds:
-                string += ' [broken]'
-            return string
         else:
             return self.name
 
@@ -105,10 +101,10 @@ class Manage(Processor):
     add feed <url> as <name>
     remove <name> feed
     list feeds
-    poll <name> feed notify ( <channel> | <user> ) on <source>
+    poll <name> feed notify <channel> on <source>
     stop polling <name> feed
     """
-    features = ('feeds',)
+    feature = ('feeds',)
 
     permission = u'feeds'
 
@@ -147,7 +143,7 @@ class Manage(Processor):
             return
 
         feed = Feed(unicode(name), unicode(url), event.identity)
-        event.session.add(feed)
+        event.session.save(feed)
         event.session.commit()
         event.addresponse(True)
         log.info(u"Added feed '%s' by %s/%s (%s): %s (Found %s entries)",
@@ -210,42 +206,17 @@ class Manage(Processor):
                     event.sender['connection'])
             event.addresponse(True)
 
-    @match(r'retry (?:broken )?feeds')
-    @authorise(fallthrough=False)
-    def unwedge(self, event):
-        broken_lock.acquire()
-        broken_feeds.clear()
-        broken_lock.release()
-        event.addresponse("I'll check them out next time I update my feeds")
-
-# broken_feeds[name] = (last_exception, fetch_interval, time_since_fetch)
-# fetches_skipped is the number of intervals in which we *haven't* tried to
-# fetch this feed. Feeds are removed whenever they are successfully loaded.
-broken_feeds = {}
-broken_lock = Lock()
-
 class Retrieve(Processor):
-    usage = u"""latest [ <count> ] ( articles | headlines ) from <name> [ starting at <number> ]
+    usage = u"""latest [ <count> ] articles from <name> [ starting at <number> ]
     article ( <number> | /<pattern>/ ) from <name>"""
-    features = ('feeds',)
+    feature = ('feeds',)
 
     interval = IntOption('interval', 'Feed Poll interval (in seconds)', 300)
-    max_interval = IntOption('max_interval',
-        'Maximum feed poll interval for broken feeds (in seconds)', 86400)
-    backoff_ratio = FloatOption('backoff',
-        'The slowdown ratio to back off from broken feeds', 2.0)
 
-
-    @match(r'^(?:latest|last)\s+(?:(\d+)\s+)?(article|headline)(s)?\s+from\s+(.+?)'
+    @match(r'^(?:latest|last)\s+(?:(\d+)\s+)?articles\s+from\s+(.+?)'
            r'(?:\s+start(?:ing)?\s+(?:at\s+|from\s+)?(\d+))?$')
-    def list(self, event, number, full, plurality, name, start):
-        full = full == 'article'
-        if number:
-            number = int(number)
-        elif not plurality:
-            number = 1
-        else:
-            number = 10
+    def list(self, event, number, name, start):
+        number = number and int(number) or 10
         start = start and int(start) or 0
 
         feed = event.session.query(Feed).filter_by(name=name).first()
@@ -260,27 +231,10 @@ class Retrieve(Processor):
             return
 
         articles = feed.entries[start:number+start]
-        entries = []
-        for article in articles:
-            if full:
-                if 'summary' in article:
-                    summary = html2text_file(article.summary, None)
-                else:
-                    if article.content[0].type in \
-                            ('application/xhtml+xml', 'text/html'):
-                        summary = html2text_file(article.content[0].value, None)
-                    else:
-                        summary = article.content[0].value
-
-                entries.append(u'%(number)s: "%(title)s"%(link)s : %(summary)s' % {
-                    'number': articles.index(article) + 1,
-                    'title': html2text_file(article.title, None).strip(),
-                    'link': get_link(article),
-                    'summary': summary,
-                })
-            else:
-                entries.append(u'%s: "%s"' % (feed.entries.index(article) + 1, html2text_file(article.title, None).strip()))
-        event.addresponse(u', '.join(entries))
+        articles = [u'%s: "%s"' % (feed.entries.index(entry) + 1,
+                                   html2text_file(entry.title, None).strip())
+                    for entry in articles]
+        event.addresponse(u', '.join(articles))
 
     @match(r'^article\s+(?:(\d+)|/(.+?)/)\s+from\s+(.+?)$')
     def article(self, event, number, pattern, name):
@@ -292,7 +246,7 @@ class Retrieve(Processor):
 
         feed.update()
         if not feed.entries:
-            event.addresponse(u"I can't find any articles in that feed")
+            event.addresponse(u"I can't access that feed")
             return
         article = None
 
@@ -322,9 +276,9 @@ class Retrieve(Processor):
             else:
                 summary = article.content[0].value
 
-        event.addresponse(u'"%(title)s"%(link)s : %(summary)s', {
+        event.addresponse(u'"%(title)s" %(link)s : %(summary)s', {
             'title': html2text_file(article.title, None).strip(),
-            'link': get_link(article),
+            'link': article.link,
             'summary': summary,
         })
 
@@ -336,36 +290,16 @@ class Retrieve(Processor):
                 .filter(Feed.target != None).all()
 
         for feed in feeds:
-            broken_lock.acquire()
             try:
-                if feed.name in broken_feeds:
-                    last_exc, interval, time_since_fetch = broken_feeds[feed.name]
-                    time_since_fetch += self.interval
-                    if time_since_fetch < interval:
-                        broken_feeds[feed.name] = \
-                                last_exc, interval, time_since_fetch
-                        continue
+                feed.update(max_age=self.interval)
+            except Exception, e:
+                if isinstance(e, URLError):
+                    log.warning(u'Exception "%s" occured while polling '
+                                u'feed %s from %s', e, feed, feed.url)
                 else:
-                    last_exc = None
-                    interval = time_since_fetch = self.interval
-
-                try:
-                    feed.update(max_age=time_since_fetch)
-                except Exception, e:
-                    if type(e) != type(last_exc):
-                        if isinstance(e, URLError):
-                            log.warning(u'Exception "%s" occured while polling '
-                                        u'feed %s from %s', e, feed, feed.url)
-                        else:
-                            log.exception(u'Exception "%s" occured while polling '
-                                          u'feed %s from %s', e, feed, feed.url)
-                    broken_feeds[feed.name] = e, self.backoff(interval), 0
-                    continue
-                else:
-                    if feed.name in broken_feeds:
-                        del broken_feeds[feed.name]
-            finally:
-                broken_lock.release()
+                    log.exception(u'Exception "%s" occured while polling '
+                                  u'feed %s from %s', e, feed, feed.url)
+                continue
 
             if not feed.entries:
                 continue
@@ -385,22 +319,12 @@ class Retrieve(Processor):
                 seen[id] = entry.updated_parsed
                 if entry.updated_parsed != old_seen.get(id):
                     event.addresponse(
-                        u"%(status)s item in %(feed)s: %(title)s%(link)s", {
+                        u"%(status)s item in %(feed)s: %(title)s", {
                             'status': id in old_seen and u'Updated' or u'New',
                             'feed': feed.name,
                             'title': entry.title,
-                            'link': get_link(entry),
                         },
                         source=feed.source, target=feed.target, adress=False)
             self.last_seen[feed.name] = seen
-
-    def backoff(self, interval):
-        return min(self.max_interval, interval*self.backoff_ratio)
-
-def get_link(entry):
-    if hasattr(entry, 'link'):
-        return u' ' + entry.link
-    else:
-        return u''
 
 # vi: set et sta sw=4 ts=4:

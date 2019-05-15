@@ -28,7 +28,7 @@ class DuelInitiate(Processor):
     I throw the gauntlet down at <user>'s feet [over <something>]
     """
 
-    features = ('duel',)
+    feature = ('duel',)
 
     accept_timeout = FloatOption('accept_timeout', 'How long do we wait for acceptance?', 60.0)
     start_delay = IntOption('start_delay', 'Time between acceptance and start of duel (rounded down to the highest minute)', 30)
@@ -219,7 +219,7 @@ class DuelDraw(Processor):
     usage = u"""draw [my <weapon>]
     bam|pew|bang|kapow|pewpew|holyhandgrenadeofantioch"""
 
-    features = ('duel',)
+    feature = ('duel',)
 
     # Parameters for Processor:
     event_types = (u'message', u'action')
@@ -402,7 +402,7 @@ class DuelDraw(Processor):
             )), duel.names[shooter], address=False)
 
 class DuelFlee(Processor):
-    features = ('duel',)
+    feature = ('duel',)
     addressed = False
     event_types = (u'state',)
 
@@ -461,7 +461,7 @@ class WerewolfGame(Processor):
     ( kill | see | eat ) <villager>
     vote for <villager>
     """
-    features = ('werewolf',)
+    feature = ('werewolf',)
     state = None
 
     player_limit = IntOption('min_players', 'The minimum number of players', 5)
@@ -510,7 +510,7 @@ class WerewolfGame(Processor):
 
         self.timed_goto(event, self.start_delay, self.start)
 
-    @match(r'^joins?\b', simple=False)
+    @match(r'^joins?\b')
     def join(self, event):
         if self.state != self.prestart:
             log.debug(u'Not joining: already in state %s.',
@@ -848,7 +848,7 @@ class WerewolfGame(Processor):
         return self.state.__name__
 
 class WerewolfState(Processor):
-    features = ('werewolf',)
+    feature = ('werewolf',)
     event_types = (u'state',)
 
     @handler

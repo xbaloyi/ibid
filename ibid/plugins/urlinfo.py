@@ -27,7 +27,7 @@ features['tinyurl'] = {
 }
 class Shorten(Processor):
     usage = u'shorten <url>'
-    features = ('tinyurl',)
+    feature = ('tinyurl',)
 
     @match(r'^shorten\s+(\S+\.\S+)$')
     def shorten(self, event, url):
@@ -45,7 +45,7 @@ class NullRedirect(HTTPRedirectHandler):
 class Lengthen(Processor):
     usage = u"""<url>
     expand <url>"""
-    features = ('tinyurl',)
+    feature = ('tinyurl',)
 
     services = ListOption('services', 'List of URL prefixes of URL shortening services', (
         'http://is.gd/', 'http://tinyurl.com/', 'http://ff.im/',
@@ -82,7 +82,7 @@ features['youtube'] = {
 class Youtube(Processor):
     usage = u'<Youtube URL>'
 
-    features = ('youtube',)
+    feature = ('youtube',)
 
     @match(r'^(?:youtube(?:\.com)?\s+)?'
         r'(?:http://)?(?:\w+\.)?youtube\.com/'

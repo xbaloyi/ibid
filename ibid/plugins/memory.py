@@ -26,7 +26,7 @@ def get_memusage():
 
 class MemoryLog(Processor):
 
-    features = ('memory',)
+    feature = ('memory',)
     autoload = False
 
     mem_filename = Option('mem_filename', 'Memory log filename', 'logs/memory.log')
@@ -99,9 +99,9 @@ class MemoryLog(Processor):
 class MemoryInfo(Processor):
     usage = u'memory usage'
 
-    features = ('memory',)
+    feature = ('memory',)
 
-    @match(r'^memory\s+usage$')
+    @match('^memory\s+usage$')
     def memory_usage(self, event):
         event.addresponse(u"Today, I weigh in at %(VmSize)i kiB Virtual, %(VmRSS)s kiB RSS", get_memusage())
 

@@ -12,7 +12,7 @@ from html5lib import HTMLParser, treebuilders
 from BeautifulSoup import BeautifulSoup
 
 from ibid.compat import ElementTree
-from ibid.utils import iri_to_uri
+from ibid.utils import url_to_bytestring
 
 class ContentTypeException(Exception):
     pass
@@ -20,7 +20,7 @@ class ContentTypeException(Exception):
 def get_html_parse_tree(url, data=None, headers={}, treetype='beautifulsoup'):
     "Request a URL, parse with html5lib, and return a parse tree from it"
 
-    req = urllib2.Request(iri_to_uri(url), data, headers)
+    req = urllib2.Request(url_to_bytestring(url), data, headers)
     f = urllib2.urlopen(req)
 
     if f.info().gettype() not in ('text/html', 'application/xhtml+xml'):
@@ -58,8 +58,6 @@ def get_html_parse_tree(url, data=None, headers={}, treetype='beautifulsoup'):
             kwargs['namespaceHTMLElements'] = False
         parser = HTMLParser(**kwargs)
     else:
-        if treetype == "html5lib-beautifulsoup":
-            treetype = "beautifulsoup"
         parser = HTMLParser(tree=treebuilders.getTreeBuilder(treetype))
 
     return parser.parse(data, encoding = encoding)

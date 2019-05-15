@@ -17,12 +17,15 @@ features = {'lotto': {
 class Lotto(Processor):
     usage = u'lotto'
 
-    features = ('lotto',)
+    feature = ('lotto',)
+
+    za_url = 'http://www.nationallottery.co.za/'
+    za_re = re.compile(r'images/(?:power_)?balls/(?:ball|power)_(\d+).gif')
 
     @match(r'^lotto(\s+for\s+south\s+africa)?$')
     def za(self, event, za):
         try:
-            f = urlopen('http://www.nationallottery.co.za/')
+            f = urlopen(self.za_url)
         except Exception:
             event.addresponse(u'Something went wrong getting to the Lotto site')
             return
@@ -30,8 +33,7 @@ class Lotto(Processor):
         s = "".join(f)
         f.close()
 
-        balls = re.findall(r'images/(?:power_)?balls/(?:ball|power)_(\d+).gif',
-                           s)
+        balls = self.za_re.findall(s)
 
         if len(balls) != 20:
             event.addresponse(u'I expected to get %(expected)s balls, but found %(found)s. They were: %(balls)s', {

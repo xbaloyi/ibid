@@ -31,7 +31,7 @@ class Help(Processor):
     how do I use <feature>
     help <(category|feature)>
     """
-    features = ('help',)
+    feature = ('help',)
     stemmer = Stemmer('english')
 
     def _get_features(self):
@@ -50,7 +50,7 @@ class Help(Processor):
         features = {}
         processor_modules = set()
         for processor in ibid.processors:
-            for feature in getattr(processor, 'features', []):
+            for feature in getattr(processor, 'feature', []):
                 if feature not in features:
                     features[feature] = {
                             'name': feature,
@@ -152,10 +152,8 @@ class Help(Processor):
     @match(r'^(?:help|features|what\s+(?:can|do)\s+you\s+do)$')
     def intro(self, event):
         categories, features = self._get_features()
-        categories = categories.itervalues()
-        if not ibid.auth.authorise(event, 'admin'):
-            categories = filter(lambda c: c['weight'] is not None,
-                                categories)
+        categories = filter(lambda c: c['weight'] is not None,
+                            categories.itervalues())
         categories = sorted(categories, key=lambda c: c['weight'])
         event.addresponse(u'I can help you with: %s.\n'
                           u'Ask me "help me with ..." for more details.',

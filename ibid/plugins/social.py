@@ -25,9 +25,9 @@ features['lastfm'] = {
 class LastFm(Processor):
     usage = u'last.fm for <username>'
 
-    features = ('lastfm',)
+    feature = ('lastfm',)
 
-    @match(r'last\.?fm for {username:chunk}')
+    @match(r'^last\.?fm\s+for\s+(\S+?)\s*$')
     def listsongs(self, event, username):
         songs = feedparser.parse('http://ws.audioscrobbler.com/1.0/user/%s/recenttracks.rss?%s' % (username, time()))
         if songs['bozo']:
@@ -47,11 +47,11 @@ class Twitter(Processor):
     usage = u"""latest (tweet|identica) from <name>
     (tweet|identica) <number>"""
 
-    features = ('microblog',)
+    feature = ('microblog',)
 
     default = {
-        'twitter':   {'endpoint': 'http://api.twitter.com/1/',   'api': 'twitter',  'name': 'tweet', 'user': 'twit'},
-        'tweet':     {'endpoint': 'http://api.twitter.com/1/',   'api': 'twitter',  'name': 'tweet', 'user': 'twit'},
+        'twitter':   {'endpoint': 'http://twitter.com/',   'api': 'twitter',  'name': 'tweet', 'user': 'twit'},
+        'tweet':     {'endpoint': 'http://twitter.com/',   'api': 'twitter',  'name': 'tweet', 'user': 'twit'},
         'identica':  {'endpoint': 'http://identi.ca/api/', 'api': 'laconica', 'name': 'dent',  'user': 'denter'},
         'identi.ca': {'endpoint': 'http://identi.ca/api/', 'api': 'laconica', 'name': 'dent',  'user': 'denter'},
         'dent':      {'endpoint': 'http://identi.ca/api/', 'api': 'laconica', 'name': 'dent',  'user': 'denter'},
@@ -74,24 +74,22 @@ class Twitter(Processor):
     def remote_latest(self, service, user):
         if service['api'] == 'twitter':
             # Twitter ommits retweets in the JSON and XML results:
-            statuses = generic_webservice('%sstatuses/user_timeline.rss'
-                                          % service['endpoint'], {
-                                              'screen_name': user,
-                                              'count': 1
-                                          })
+            statuses = generic_webservice('%sstatuses/user_timeline/%s.atom'
+                    % (service['endpoint'], user.encode('utf-8')),
+                    {'count': 1})
             tree = ElementTree.fromstring(statuses)
-            latest = tree.find('.//item')
+            latest = tree.find('{http://www.w3.org/2005/Atom}entry')
             if latest is None:
-                if tree.find('.//error'):
-                    log.info('Twitter user_latest returned: %s',
-                             tree.findtext('.//error'))
                 raise self.NoTweetsException(user)
             return {
-                'text': latest.findtext('description')
+                'text': latest.findtext('{http://www.w3.org/2005/Atom}content')
                         .split(': ', 1)[1],
                 'ago': ago(datetime.utcnow() - parse_timestamp(
-                    latest.findtext('pubDate'))),
-                'url': latest.findtext('guid'),
+                    latest.findtext('{http://www.w3.org/2005/Atom}published'))),
+                'url': [x for x
+                     in latest.getiterator('{http://www.w3.org/2005/Atom}link')
+                     if x.get('type') == 'text/html'
+                  ][0].get('href'),
             }
         elif service['api'] == 'laconica':
             statuses = json_webservice('%sstatuses/user_timeline/%s.json'
@@ -144,12 +142,11 @@ class Twitter(Processor):
                     'tweet': service['name'],
                 })
 
-    @match(r'^https?://(?:www\.)?twitter\.com/(?:#!/)?[^/ ]+/statuse?s?/(\d+)$',
-           simple=False)
+    @match(r'^https?://(?:www\.)?twitter\.com/(?:#!/)?[^/ ]+/statuse?s?/(\d+)$')
     def twitter(self, event, id):
         self.update(event, u'twitter', id)
 
-    @match(r'https?://(?:www\.)?identi.ca/notice/{id:digits}')
+    @match(r'^https?://(?:www\.)?identi.ca/notice/(\d+)$')
     def identica(self, event, id):
         self.update(event, u'identica', id)
 

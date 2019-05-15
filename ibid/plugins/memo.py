@@ -67,7 +67,7 @@ Identity.memos_recvd = relation(Memo, primaryjoin=Identity.id==Memo.to_id,
 class Tell(Processor):
     usage = u"""(tell|pm|privmsg|msg|ask) <person> [on <source>] <message>
     forget my (first|last|<n>th) message for <person> [on <source>]"""
-    features = ('memo',)
+    feature = ('memo',)
 
     permission = u'sendmemo'
     permissions = (u'recvmemo',)
@@ -118,7 +118,7 @@ class Tell(Processor):
                 event.addresponse(u'I am not connected to %s', source)
                 return
             to = Identity(source, who)
-            event.session.add(to)
+            event.session.save(to)
             event.session.commit()
 
             log.info(u"Created identity %s for %s on %s", to.id, to.identity,
@@ -133,7 +133,7 @@ class Tell(Processor):
 
         memo = Memo(event.identity, to.id, memo,
                     how.lower() in (u'pm', u'privmsg', u'msg'))
-        event.session.add(memo)
+        event.session.save_or_update(memo)
 
         event.session.commit()
         log.info(u"Stored memo %s for %s (%s) from %s (%s): %s",
@@ -151,18 +151,18 @@ class Tell(Processor):
             'source': to.source,
         })
 
-    @match(r'(?:delete|forget) (?:my )?'
-            r'(?:(?P<num>first|last|\d+(?:st|nd|rd|th)?) )?' # 1st way to specify number
-            r'(?:memo|message|msg) '
-            r'(?(1)|#?{num:digits} )?' # 2nd way
-            r'(?:for|to) (?P<who>.+?)(?: on {source:chunk})?')
+    @match(r'^(?:delete|forget)\s+(?:my\s+)?'
+            r'(?:(first|last|\d+(?:st|nd|rd|th)?)\s+)?' # 1st way to specify number
+            r'(?:memo|message|msg)\s+'
+            r'(?(1)|#?(\d+)\s+)?' # 2nd way
+            r'(?:for|to)\s+(.+?)(?:\s+on\s+(\S+))?$')
     @authorise(fallthrough=False)
-    def forget(self, event, num, who, source):
+    def forget(self, event, num1, num2, who, source):
         if not source:
             source = event.source
         else:
             source = source.lower()
-        number = num or 'last'
+        number = num1 or num2 or 'last'
         number = number.lower()
         if number == 0:
             # Don't wrap around to last message, that'd be unexpected
@@ -238,7 +238,7 @@ def get_memos(event, delivered=False):
             .order_by(Memo.time.asc()).all()
 
 class Deliver(Processor):
-    features = ('memo',)
+    feature = ('memo',)
 
     addressed = False
     processed = True
@@ -259,11 +259,10 @@ class Deliver(Processor):
                 message = u'By the way, you have a pile of memos waiting for ' \
                           u'you, too many to read out in public. PM me'
                 if public:
-                    event.addresponse(message)
+                    event.addresponse(u'%s: ' + message, event.sender['nick'])
                 else:
                     event.addresponse(message,
-                                      target=event.sender['connection'],
-                                      address=False)
+                                      target=event.sender['connection'])
                 notified_overlimit_cache.add(event.identity)
             return
 
@@ -272,21 +271,26 @@ class Deliver(Processor):
             if 'memo' in event and event.memo == memo.id:
                 continue
 
-            message = u'By the way, %(sender)s on %(source)s told me ' \
-                      u'"%(message)s" %(ago)s ago' % {
-                'sender': memo.sender.identity,
-                'source': memo.sender.source,
-                'message': memo.memo,
-                'ago': ago(event.time - memo.time),
-            }
             if memo.private:
-                event.addresponse(message, target=event.sender['connection'],
-                                  address=False)
+                message = u'By the way, %(sender)s on %(source)s told me ' \
+                          u'"%(message)s" %(ago)s ago' % {
+                    'sender': memo.sender.identity,
+                    'source': memo.sender.source,
+                    'message': memo.memo,
+                    'ago': ago(event.time - memo.time),
+                }
+                event.addresponse(message, target=event.sender['connection'])
             else:
-                event.addresponse(message)
+                event.addresponse(u'By the way, %(sender)s on %(source)s '
+                                  u'told me "%(message)s" %(ago)s ago', {
+                    'sender': memo.sender.identity,
+                    'source': memo.sender.source,
+                    'message': memo.memo,
+                    'ago': ago(event.time - memo.time),
+                })
 
             memo.delivered = True
-            event.session.add(memo)
+            event.session.save_or_update(memo)
             event.session.commit()
             log.info(u"Delivered memo %s to %s (%s)",
                     memo.id, event.identity, event.sender['connection'])
@@ -295,7 +299,7 @@ class Deliver(Processor):
             nomemos_cache.add(event.identity)
 
 class Notify(Processor):
-    features = ('memo',)
+    feature = ('memo',)
 
     event_types = (u'state',)
     addressed = False
@@ -318,7 +322,7 @@ class Notify(Processor):
             event.addresponse(
                 u'You have %s messages, too many for me to tell you in public,'
                 u' so ask me in private.',
-                len(memos), target=event.sender['connection'], address=False)
+                len(memos), target=event.sender['connection'])
         elif len(memos) > 0:
             event.addresponse(
                 plural(
@@ -336,7 +340,7 @@ class Messages(Processor):
     usage = u"""my messages
     message <number>
     my messages for <person> [on <source>]"""
-    features = ('memo',)
+    feature = ('memo',)
 
     @match(r'^my\s+messages$')
     def messages(self, event):

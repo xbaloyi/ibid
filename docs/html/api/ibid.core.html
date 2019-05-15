@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ibid.core – Ibid Core &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="ibid.event – Events" href="ibid.event.html" />
+    <link rel="prev" title="ibid.config – Configuration Files" href="ibid.config.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="ibid.event.html" title="ibid.event – Events"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ibid.config.html" title="ibid.config – Configuration Files"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-ibid.core">
+<h1><tt class="xref docutils literal"><span class="pre">ibid.core</span></tt> &#8211; Ibid Core<a class="headerlink" href="#module-ibid.core" title="Permalink to this headline">¶</a></h1>
+<p>This module contains Ibid&#8217;s startup code, plugin, source, config, and DB
+loading as well as the Event dispatcher.</p>
+<div class="section" id="dispatcher">
+<h2>Dispatcher<a class="headerlink" href="#dispatcher" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ibid.core.Dispatcher">
+<em class="property">class </em><tt class="descclassname">ibid.core.</tt><tt class="descname">Dispatcher</tt><a class="headerlink" href="#ibid.core.Dispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Ibid <a title="ibid.event.Event" class="reference external" href="ibid.event.html#ibid.event.Event"><tt class="xref docutils literal"><span class="pre">Event</span></tt></a> dispatcher.</p>
+<dl class="method">
+<dt id="ibid.core.Dispatcher.call_later">
+<tt class="descname">call_later</tt><big>(</big><em>delay</em>, <em>callable</em>, <em>oldevent</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#ibid.core.Dispatcher.call_later" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run <em>callable</em> after <em>delay</em> seconds, passing it <em>oldevent</em> and
+<em>*args</em> and <em>*kwargs</em>.</p>
+<p>Returns a <tt class="xref docutils literal"><span class="pre">twisted.internet.base.DelayedCall</span></tt>.</p>
+<p>Can be used in plugins instead of blocking in sleep.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="internal-functions">
+<h3>Internal Functions<a class="headerlink" href="#internal-functions" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<dl class="method">
+<dt id="ibid.core._process">
+<tt class="descclassname">ibid.core.</tt><tt class="descname">_process</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#ibid.core._process" title="Permalink to this definition">¶</a></dt>
+<dd><p>The core of the dispatcher, must be called from a worker thread.</p>
+<p>This function takes <em>event</em> and passes it to the
+<a title="ibid.plugins.Processor.process" class="reference external" href="ibid.plugins.html#ibid.plugins.Processor.process"><tt class="xref docutils literal"><span class="pre">process()</span></tt></a> function in
+each processor, in order of increasing <a title="ibid.plugins.Processor.priority" class="reference external" href="ibid.plugins.html#ibid.plugins.Processor.priority"><tt class="xref docutils literal"><span class="pre">priority</span></tt></a>.</p>
+<p>After each <a title="ibid.plugins.Processor" class="reference external" href="ibid.plugins.html#ibid.plugins.Processor"><tt class="xref docutils literal"><span class="pre">Processor</span></tt></a>, any
+unclean SQLAlchemy sessions are committed and exceptions logged.</p>
+<p>Any responses attached to <em>event</em> are dispatched to their
+destination sources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.send">
+<tt class="descclassname">ibid.core.</tt><tt class="descname">send</tt><big>(</big><em>response</em><big>)</big><a class="headerlink" href="#ibid.core.send" title="Permalink to this definition">¶</a></dt>
+<dd>Dispatches <em>response</em> to the appropriate source.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.dispatch">
+<tt class="descclassname">ibid.core.</tt><tt class="descname">dispatch</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#ibid.core.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd>Called by sources to dispatch <em>event</em>.
+Calls <a title="ibid.core._process" class="reference internal" href="#ibid.core._process"><tt class="xref docutils literal"><span class="pre">_process()</span></tt></a>, deferred to a thread, and returns the
+<tt class="xref docutils literal"><span class="pre">twisted.internet.defer.Deferred</span></tt>.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.delayed_call">
+<tt class="descclassname">ibid.core.</tt><tt class="descname">delayed_call</tt><big>(</big><em>callable</em>, <em>event</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#ibid.core.delayed_call" title="Permalink to this definition">¶</a></dt>
+<dd>The method called by <tt class="xref docutils literal"><span class="pre">call_later()</span></tt>, in a thread, to call
+<em>callable</em>, then <a title="ibid.core._process" class="reference internal" href="#ibid.core._process"><tt class="xref docutils literal"><span class="pre">_process()</span></tt></a> on <em>event</em>.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.delayed_response">
+<tt class="descclassname">ibid.core.</tt><tt class="descname">delayed_response</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#ibid.core.delayed_response" title="Permalink to this definition">¶</a></dt>
+<dd>Dispatches responses from <a title="ibid.core.delayed_call" class="reference internal" href="#ibid.core.delayed_call"><tt class="xref docutils literal"><span class="pre">delayed_call()</span></tt></a>.</dd></dl>
+
+</blockquote>
+</div>
+</div>
+<div class="section" id="reloader">
+<h2>Reloader<a class="headerlink" href="#reloader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ibid.core.Reloader">
+<em class="property">class </em><tt class="descclassname">ibid.core.</tt><tt class="descname">Reloader</tt><a class="headerlink" href="#ibid.core.Reloader" title="Permalink to this definition">¶</a></dt>
+<dd><p>The center of Ibid&#8217;s bootstrap process, the reloader loads plugins
+and processors.
+They can be reloaded at any time.</p>
+<dl class="method">
+<dt id="ibid.core.Reloader.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#ibid.core.Reloader.run" title="Permalink to this definition">¶</a></dt>
+<dd>Boostrap Ibid and run the reactor.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.reload_dispatcher">
+<tt class="descname">reload_dispatcher</tt><big>(</big><big>)</big><a class="headerlink" href="#ibid.core.Reloader.reload_dispatcher" title="Permalink to this definition">¶</a></dt>
+<dd>Reload the Ibid dispatcher.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.load_source">
+<tt class="descname">load_source</tt><big>(</big><em>name</em><span class="optional">[</span>, <em>service</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.core.Reloader.load_source" title="Permalink to this definition">¶</a></dt>
+<dd>Load source of name <em>name</em>, setting the service parent to
+<em>service</em>.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.load_sources">
+<tt class="descname">load_sources</tt><big>(</big><span class="optional">[</span><em>service</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.core.Reloader.load_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load all enabled sources, setting the service parents to
+<em>service</em>.</p>
+<p>Sources can be disabled by setting the configuration key
+<em>service</em>.``disabled = True``.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.unload_source">
+<tt class="descname">unload_source</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#ibid.core.Reloader.unload_source" title="Permalink to this definition">¶</a></dt>
+<dd>Unload source of name <em>name</em>.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.reload_source">
+<tt class="descname">reload_source</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#ibid.core.Reloader.reload_source" title="Permalink to this definition">¶</a></dt>
+<dd>Re-load source of name <em>name</em>.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.load_processors">
+<tt class="descname">load_processors</tt><big>(</big><span class="optional">[</span><em>load</em>, <em>noload</em>, <em>autoload</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#ibid.core.Reloader.load_processors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load all enabled processors, according to the rules in
+<tt class="xref docutils literal"><span class="pre">load_processor()</span></tt>.</p>
+<p><em>load</em> specifies the plugins to force loading, <em>noload</em> plugins to
+skip loading, and <em>autoload</em> whether to load everything by
+default.
+If these parameters are not supplied or are <tt class="xref docutils literal"><span class="pre">None</span></tt>, they will be
+looked up as configuration keys in the <tt class="docutils literal"><span class="pre">plugins</span></tt> block.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">load_processor(name, [noload, load, load_all=False,</tt></dt>
+<dt>
+<tt class="descname">noload_all=False])</tt></dt>
+<dd>Load the plugin of name <em>name</em>.
+Individual Processors can be disabled by listing them in <em>noload</em>.
+If they are marked with
+<a title="ibid.plugins.Processor.autoload" class="reference external" href="ibid.plugins.html#ibid.plugins.Processor.autoload"><tt class="xref docutils literal"><span class="pre">autoload</span></tt></a> = <tt class="xref docutils literal"><span class="pre">False</span></tt>, then
+they are skipped unless listed in <em>load</em> or <em>load_all</em> is
+<tt class="xref docutils literal"><span class="pre">True</span></tt>.</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">unload_processor(name).</tt></dt>
+<dd>Unload plugin of name <em>name</em>.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.reload_databases">
+<tt class="descname">reload_databases</tt><big>(</big><big>)</big><a class="headerlink" href="#ibid.core.Reloader.reload_databases" title="Permalink to this definition">¶</a></dt>
+<dd>Reload the Databases.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.reload_auth">
+<tt class="descname">reload_auth</tt><big>(</big><big>)</big><a class="headerlink" href="#ibid.core.Reloader.reload_auth" title="Permalink to this definition">¶</a></dt>
+<dd>Reload the <tt class="xref docutils literal"><span class="pre">ibid.auth</span></tt>.</dd></dl>
+
+<dl class="method">
+<dt id="ibid.core.Reloader.reload_config">
+<tt class="descname">reload_config</tt><big>(</big><big>)</big><a class="headerlink" href="#ibid.core.Reloader.reload_config" title="Permalink to this definition">¶</a></dt>
+<dd>Notify all processors of a configuration reload, by calling
+<a title="ibid.plugins.Processor.setup" class="reference external" href="ibid.plugins.html#ibid.plugins.Processor.setup"><tt class="xref docutils literal"><span class="pre">setup()</span></tt></a>.</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="databases">
+<h2>Databases<a class="headerlink" href="#databases" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ibid.core.regexp">
+<tt class="descclassname">ibid.core.</tt><tt class="descname">regexp</tt><big>(</big><em>pattern</em>, <em>item</em><big>)</big><a class="headerlink" href="#ibid.core.regexp" title="Permalink to this definition">¶</a></dt>
+<dd>Regular Expression function for SQLite.</dd></dl>
+
+<dl class="function">
+<dt id="ibid.core.sqlite_creator">
+<tt class="descclassname">ibid.core.</tt><tt class="descname">sqlite_creator</tt><big>(</big><em>database</em><big>)</big><a class="headerlink" href="#ibid.core.sqlite_creator" title="Permalink to this definition">¶</a></dt>
+<dd>Connect to a SQLite database, with regular expression support, thanks
+to <a title="ibid.core.regexp" class="reference internal" href="#ibid.core.regexp"><tt class="xref docutils literal"><span class="pre">regexp()</span></tt></a>.</dd></dl>
+
+<dl class="class">
+<dt id="ibid.core.DatabaseManager">
+<em class="property">class </em><tt class="descclassname">ibid.core.</tt><tt class="descname">DatabaseManager</tt><big>(</big><em>check_schema_versions=True</em><big>)</big><a class="headerlink" href="#ibid.core.DatabaseManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>The DatabaseManager is responsible for loading databases (usually
+only one, <tt class="docutils literal"><span class="pre">'ibid'</span></tt>), and is a dict of database to
+<tt class="xref docutils literal"><span class="pre">sqlalchemy.orm.scoping.ScopedSession</span></tt>s.</p>
+<dl class="method">
+<dt id="ibid.core.DatabaseManager.load">
+<tt class="descname">load</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#ibid.core.DatabaseManager.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the database of name <em>name</em>.</p>
+<p>Echoing is configured by <tt class="docutils literal"><span class="pre">debugging.sqlalchemy_echo</span></tt>.</p>
+<p>Databases are configured as sanely as possible:</p>
+<ul class="simple">
+<li>All databases are brought up in a UTF-8 mode, with UTC timezone.</li>
+<li>MySQL has the default engine set to InnoDB and ANSI mode enabled.</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#"><tt class="docutils literal"><span class="pre">ibid.core</span></tt> &#8211; Ibid Core</a><ul>
+<li><a class="reference external" href="#dispatcher">Dispatcher</a><ul>
+<li><a class="reference external" href="#internal-functions">Internal Functions</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#reloader">Reloader</a></li>
+<li><a class="reference external" href="#databases">Databases</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="ibid.config.html"
+                                  title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">ibid.config</span></tt> &#8211; Configuration Files</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="ibid.event.html"
+                                  title="next chapter"><tt class="docutils literal"><span class="pre">ibid.event</span></tt> &#8211; Events</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/api/ibid.core.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ibid.event.html" title="ibid.event – Events"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ibid.config.html" title="ibid.config – Configuration Files"
+             >previous</a> |</li>
+        <li><a href="../index.html">Ibid v0.1.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

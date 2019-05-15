@@ -21,7 +21,7 @@ class RFCLookup(Processor):
     usage = u"""rfc <number>
     rfc [for] <search terms>
     rfc [for] /regex/"""
-    features = ('rfc',)
+    feature = ('rfc',)
 
     indexurl = Option('index_url', "A HTTP url for the RFC Index file", "http://www.rfc-editor.org/rfc/rfc-index.txt")
     cachetime = IntOption("cachetime", "Time to cache RFC index for", cachetime)
@@ -68,6 +68,7 @@ class RFCLookup(Processor):
         record_re = re.compile(r"^(.+?)\. ((?:(?:[A-Z]{1,2}|[A-Z]\.-?[A-Z]|[A-Z]-[A-Z]|[A-Z]\([A-Z]\)|[A-Z][a-z]+)\.{0,2}"
             r"(?: (?:[Vv]an|[Dd]e[nr]?|[Ll][ae]|El|Del|Dos|da))* ?[a-zA-Z\-']+(?:[\.,]? (?:\d+(?:rd|nd|st|th)|Jr|I+)\.?)?|%s)"
             r"(?:, ?)?)+\. ([A-Z][a-z]{2,8}(?: \d{1,2})? \d{4})\. \((.+)\)$" % "|".join(special_authors))
+        extensions_re = re.compile(r"\) \(")
 
         def __init__(self, number, record):
             self.number = number
@@ -83,7 +84,7 @@ class RFCLookup(Processor):
                     log.warning("CAN'T DECODE RFC: " + self.record)
                 else:
                     self.title, self.authors, self.date, extensions = m.groups()
-                    extensions = extensions.split(') (')
+                    extensions = self.extensions_re.split(extensions)
                     self.formats = []
                     self.status = None
                     self.also = None

@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: Ibid
+Version: 0.1.1
+Summary: Multi-protocol general purpose chat bot
+Home-page: http://ibid.omnia.za.net/
+Author: Ibid Developers
+Author-email: ibid@omnia.za.net
+License: MIT
+Description: UNKNOWN
+Keywords: chat bot irc jabber twisted messaging
+Platform: UNKNOWN

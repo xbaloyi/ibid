@@ -38,7 +38,7 @@ class Usaco(Processor):
     admin_user = Option('admin_user', 'Admin user on USACO', None)
     admin_password = Option('admin_password', 'Admin password on USACO', None)
 
-    features = ('usaco',)
+    feature = ('usaco',)
     # Clashes with identity, so lower our priority since if we match, then
     # this is the better match
     priority = -20
@@ -193,7 +193,7 @@ class Usaco(Processor):
         for type in ['raw', 'deaddressed', 'clean', 'stripped']:
             event['message'][type] = re.sub(r'(.*)(%s)' % re.escape(term), r'\1[redacted]', event['message'][type])
 
-    @match(r'^(\S+)\s+(?:is|am)\s+(\S+)\s+on\s+usaco(?:\s+password\s+(.+))?$')
+    @match(r'^(\S+)\s+(?:is|am)\s+(\S+)\s+on\s+usaco(?:\s+password\s+(\S+))?$')
     def usaco_account(self, event, user, usaco_user, password):
         if password:
             self._redact(event, password)
@@ -239,7 +239,7 @@ class Usaco(Processor):
             usaco_account[0].value = usaco_user
         else:
             account.attributes.append(Attribute('usaco_account', usaco_user))
-        event.session.add(account)
+        event.session.save_or_update(account)
         event.session.commit()
 
         event.addresponse(u'Done')

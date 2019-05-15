@@ -23,7 +23,7 @@ import ibid
 from ibid.plugins import Processor, match, authorise
 from ibid.config import Option, IntOption, FloatOption, DictOption
 from ibid.utils import file_in_path, get_country_codes, get_process_output, \
-                       human_join, unicode_output, iri_to_uri
+                       human_join, unicode_output, url_to_bytestring
 
 features = {}
 
@@ -34,7 +34,7 @@ features['dns'] = {
 class DNS(Processor):
     usage = u'dns [<record type>] [for] <host> [from <nameserver>]'
 
-    features = ('dns',)
+    feature = ('dns',)
 
     def setup(self):
         if Resolver is None:
@@ -83,7 +83,7 @@ features['ping'] = {
 }
 class Ping(Processor):
     usage = u'ping <host>'
-    features = ('ping',)
+    feature = ('ping',)
 
     ping = Option('ping', 'Path to ping executable', 'ping')
 
@@ -116,7 +116,7 @@ features['tracepath'] = {
 }
 class Tracepath(Processor):
     usage = u'tracepath <host>'
-    features = ('tracepath',)
+    feature = ('tracepath',)
 
     tracepath = Option('tracepath', 'Path to tracepath executable', 'tracepath')
 
@@ -145,7 +145,7 @@ features['ipcalc'] = {
 class IPCalc(Processor):
     usage = u"""ipcalc <network>/<subnet>
     ipcalc <address> - <address>"""
-    features = ('ipcalc',)
+    feature = ('ipcalc',)
 
     ipcalc = Option('ipcalc', 'Path to ipcalc executable', 'ipcalc')
 
@@ -222,14 +222,14 @@ class HTTP(Processor):
     usage = u"""(get|head) <url>
     is <domain> (up|down)
     tell me when <domain|url> is up"""
-    features = ('http',)
+    feature = ('http',)
     priority = -10
 
     max_size = IntOption('max_size', u'Only request this many bytes', 2048)
     timeout = IntOption('timeout',
             u'Timeout for HTTP connections in seconds', 15)
     sites = DictOption('sites', u'Mapping of site names to domains', {})
-    redirect_limit = IntOption('redirect_limit',
+    max_hops = IntOption('max_hops',
             u'Maximum number of http redirects to follow', 5)
     whensitup_delay = IntOption('whensitup_delay',
             u'Initial delay between whensitup attempts in seconds', 60)
@@ -260,7 +260,7 @@ class HTTP(Processor):
                 if not location:
                     break
                 status, reason, data, headers = self._request(location, 'GET')
-                if hops >= self.redirect_limit:
+                if hops >= self.max_hops:
                     reply += u' to %s' % location
                     break
                 hops += 1
@@ -319,7 +319,7 @@ class HTTP(Processor):
         try:
             status, reason, data, headers = self._request(valid_url, 'HEAD')
             if 300 <= status < 400 and self._get_header(headers, 'location'):
-                if redirects > self.redirect_limit:
+                if redirects > self.max_hops:
                     return False, valid_url, u'Redirect limit reached'
                 return self._isitup(self._get_header(headers, 'location'),
                                     return_status, redirects + 1)
@@ -407,7 +407,7 @@ class HTTP(Processor):
 
         try:
             try:
-                conn.request(method.upper(), iri_to_uri(url),
+                conn.request(method.upper(), url_to_bytestring(url),
                              headers=headers)
                 response = conn.getresponse()
                 data = response.read(self.max_size)
@@ -444,7 +444,7 @@ features['tld'] = {
 class TLD(Processor):
     usage = u""".<tld>
     tld for <country>"""
-    features = ('tld',)
+    feature = ('tld',)
 
     country_codes = {}
 
@@ -488,7 +488,7 @@ features['ports'] = {
 class Ports(Processor):
     usage = u"""port for <protocol>
     (tcp|udp) port <number>"""
-    features = ('ports',)
+    feature = ('ports',)
     priority = 10
 
     services = Option('services', 'Path to services file', '/etc/services')
@@ -528,10 +528,10 @@ class Ports(Processor):
                             break
                         self.protocols[proto.lower()].append(port)
 
-    @match(r'(?:{proto:any} )?ports?(?: numbers?)?(?(1)| for {proto:any})')
-    def portfor(self, event, proto):
+    @match(r'^(?:(.+)\s+)?ports?(?:\s+numbers?)?(?(1)|\s+for\s+(.+))$')
+    def portfor(self, event, proto1, proto2):
         self._load_services()
-        protocol = proto.lower()
+        protocol = (proto1 or proto2).lower()
         if protocol in self.protocols:
             event.addresponse(human_join(self.protocols[protocol]))
         else:
@@ -561,7 +561,7 @@ class Nmap(Processor):
     usage = u"""port scan <hostname>
     net scan <network>/<prefix>"""
 
-    features = ('nmap',)
+    feature = ('nmap',)
     permission = 'nmap'
     min_prefix = IntOption('min_prefix', 'Minimum network prefix that may be scanned', 24)
 

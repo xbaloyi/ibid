@@ -2,7 +2,6 @@
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
 from datetime import datetime, timedelta
-from errno import EEXIST
 import logging
 from os import chmod, makedirs
 from os.path import dirname, expanduser, join
@@ -38,7 +37,7 @@ class Meeting(Processor):
     minutes so far
     meeting title is <title>
     """
-    features = ('meeting',)
+    feature = ('meeting',)
     permission = u'chairmeeting'
 
     formats = Option('formats', u'Formats to log to. '
@@ -181,7 +180,7 @@ class Meeting(Processor):
             try:
                 makedirs(dirname(filename), int(self.dir_mode, 8))
             except OSError, e:
-                if e.errno != EEXIST:
+                if e.errno != 17:
                     raise e
             f = open(filename, 'w+')
             chmod(filename, int(self.file_mode, 8))
@@ -245,7 +244,7 @@ class MeetingLogger(Processor):
     addressed = False
     processed = True
     priority = 1900
-    features = ('meeting',)
+    feature = ('meeting',)
 
     def process(self, event):
         if ('channel' in event and 'source' in event
@@ -263,9 +262,6 @@ class MeetingLogger(Processor):
                 if isinstance(message, dict):
                     message = message['raw']
                 log_event['message'] = message
-            elif event['type'] == u'state':
-                log_event['type'] = u'notice'
-                log_event['message'] = event['state']
 
             if 'sender' in event:
                 log_event['nick'] = event.sender['nick']
@@ -299,7 +295,7 @@ class Poll(Processor):
     vote (<id> | <option>) [on <topic>]
     end poll
     """
-    features = ('poll',)
+    feature = ('poll',)
     permission = u'chairmeeting'
 
     polls = {}
@@ -419,7 +415,7 @@ class Poll(Processor):
         else:
             event.processed = True
 
-    @match(r'^end\s+poll$')
+    @match('^end\s+poll$')
     @authorise()
     def end_poll(self, event):
         if not event.public:

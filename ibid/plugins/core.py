@@ -70,7 +70,7 @@ class Ignore(Processor):
 
     priority = -1500
     addressed = False
-    event_types = (u'message', u'action', u'notice', u'invite')
+    event_types = (u'message', u'action', u'notice')
 
     nicks = ListOption('ignore', 'List of nicks to ignore', [])
 
@@ -97,7 +97,7 @@ class Address(Processor):
     priority = 1600
     processed = True
     addressed = False
-    event_types = (u'message', u'action', u'notice', u'state', u'invite')
+    event_types = ('message', 'action', 'notice', 'state')
 
     acknowledgements = ListOption('acknowledgements', 'Responses for positive acknowledgements',
             (u'Okay', u'Sure', u'Done', u'Righto', u'Alrighty', u'Yessir'))
@@ -130,7 +130,7 @@ class Complain(Processor):
 
     priority = 950
     processed = True
-    event_types = (u'message', u'action', u'invite')
+    event_types = ('message', 'action')
 
     complaints = DictOption('complaints', 'Complaint responses', {
         'nonsense': (
@@ -273,7 +273,7 @@ class UnicodeWarning(Processor):
             for value in object:
                 self.process(value)
         elif isinstance(object, str):
-            self.log.warning(u'Found a non-unicode string: %r', object)
+            self.log.warning(u'Found a non-unicode string: %s' % object)
 
 class ChannelTracker(Processor):
     priority = -1550

@@ -1,0 +1,494 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuration &mdash; Ibid v0.1.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ibid v0.1.1 documentation" href="index.html" />
+    <link rel="next" title="Plugins" href="plugins.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugins"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="configuration">
+<span id="id1"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="the-botdir">
+<span id="botdir"></span><h2>The botdir<a class="headerlink" href="#the-botdir" title="Permalink to this headline">¶</a></h2>
+<p>Every Ibid lives in a directory, the botdir.
+This holds the configuration file, logs, caches, the SQLite database if
+you are using it, and plugins you&#8217;ve written.</p>
+<p>The botdir should be your current directory whenever you run an
+ibid-related script, so it can find the configuration file.</p>
+<p>All non-absolute paths in the ibid configuration are relative to the
+botdir.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The botdir is added to the front of <tt class="xref docutils literal"><span class="pre">sys.path</span></tt>, so any python
+package that you put in the botdir will be available to the bot, and
+take precedence over other versions of the same package.</p>
+</div>
+</div>
+<div class="section" id="the-configuration-file">
+<h2>The configuration file<a class="headerlink" href="#the-configuration-file" title="Permalink to this headline">¶</a></h2>
+<p>Ibid&#8217;s configuration is stored in <tt class="docutils literal"><span class="pre">ibid.ini</span></tt>, created when you
+install Ibid.
+You can edit it at any time and tell the bot to <tt class="docutils literal"><span class="pre">reread</span> <span class="pre">config</span></tt> or
+edit it online with the <em>config</em> feature.</p>
+<p>A simple example ibid.ini:</p>
+<div class="highlight-python"><pre>botname = joebot
+logging = logging.ini
+
+[auth]
+    methods = password,
+    timeout = 300
+    permissions = +factoid, +karma, +sendmemo, +recvmemo, +feeds, +publicresponse
+
+[sources]
+    [[telnet]]
+    [[timer]]
+    [[http]]
+        url = http://joebot.example.com
+    [[smtp]]
+    [[pb]]
+    [[atrum]]
+        channels = "#ibid",
+        nick = $botname
+        type = irc
+        auth = hostmask, nickserv
+        server = irc.atrum.org
+
+[plugins]
+    cachedir = /tmp/ibid
+    [[core]]
+        names = $botname, bot, ant
+        ignore = ,
+
+[databases]
+    ibid = sqlite:///ibid.db</pre>
+</div>
+<p>This shows the main sections of the file.
+It is in configobj format, an ini-variant with nested sections.
+Whitespace is ignored, all values belong to the most recently defined
+section.</p>
+<p>Lines can be commented out by prefixing them with <tt class="docutils literal"><span class="pre">#</span></tt>.</p>
+<div class="section" id="top-level-options">
+<h3>Top Level Options<a class="headerlink" href="#top-level-options" title="Permalink to this headline">¶</a></h3>
+<dl class="describe">
+<dt>
+<tt class="descname">botname:</tt></dt>
+<dd>String: The name of the bot.
+It will respond to this name.</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">logging:</tt></dt>
+<dd><p>String: The location of the <tt class="xref docutils literal"><span class="pre">logging</span></tt> configuration file.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">logging.ini</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">mysql_engine:</tt></dt>
+<dd><p>String: The engine that MySQL tables will be created in.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">InnoDB</span></tt></p>
+</dd></dl>
+
+</div>
+<div class="section" id="auth">
+<h3>Auth<a class="headerlink" href="#auth" title="Permalink to this headline">¶</a></h3>
+<p>This section is for configuring Ibid&#8217;s user-authentication.
+Permissions that are granted <tt class="docutils literal"><span class="pre">…when</span> <span class="pre">authed</span></tt> require users to
+authenticate themselves to the bot before the permission can be invoked.
+Some sources have special ways of authenticating users (e.g. the
+<tt class="docutils literal"><span class="pre">nickserv</span></tt> authentication method on IRC) or guarantee that their users
+are always authenticated via the <tt class="docutils literal"><span class="pre">imlicit</span></tt> authentication method (e.g.
+jabber).</p>
+<dl class="describe">
+<dt>
+<tt class="descname">methods:</tt></dt>
+<dd>List: Authentication methods that can be used on all sources.</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">timeout:</tt></dt>
+<dd>Number: Time in seconds that authentication should be cached for
+before requiring re-authentication.</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">permissions:</tt></dt>
+<dd><p>List: Permissions that are granted to everyone.
+Although they can be overridden for specific users, using the online
+grant function.</p>
+<p>The name of the permission can be prefixed with a <tt class="docutils literal"><span class="pre">+</span></tt> to indicate
+that this permission is granted without requiring authentication.
+Or a <tt class="docutils literal"><span class="pre">-</span></tt> to revoke a permission granted to all users of a source.</p>
+<p>See <a class="reference internal" href="#permissions"><em>the list of permissions</em></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="sources">
+<h3>Sources<a class="headerlink" href="#sources" title="Permalink to this headline">¶</a></h3>
+<p>Sources are the way that Ibid connects to users.
+Every IRC/SILC/DC server is it&#8217;s own source as are connections to other
+services.</p>
+<p>The configuration parameters that applies to all sources are:</p>
+<dl class="describe">
+<dt>
+<tt class="descname">disabled:</tt></dt>
+<dd>Boolean: Every source can be disabled from auto-starting by setting
+this to <tt class="xref docutils literal"><span class="pre">True</span></tt> in the source`s configuration.</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">type:</tt></dt>
+<dd><p>String: The driver that this source should use.
+This allows you to have more than one IRC source, for example.</p>
+<p>Default: The name of the source.
+If you specify a type, you are free to name the source anything you
+want to.</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">permissions:</tt></dt>
+<dd><p>List: This lets you grant and revoke permissions to all users on the
+source.
+They can be overridden for specific users, using the online grant
+function.</p>
+<p>The name of the permission can be prefixed with a <tt class="docutils literal"><span class="pre">+</span></tt> to indicate
+that this permission is granted without requiring authentication.
+Or a <tt class="docutils literal"><span class="pre">-</span></tt> to revoke a permission granted to all users of a source.</p>
+<p>See <a class="reference internal" href="#permissions"><em>the list of permissions</em></a>.</p>
+</dd></dl>
+
+<div class="section" id="irc-source">
+<h4>IRC Source<a class="headerlink" href="#irc-source" title="Permalink to this headline">¶</a></h4>
+<p>Some of the IRC functionality (i.e. NickServ authentication and
+joining/parting channels) is handled by the <tt class="docutils literal"><span class="pre">irc</span></tt> plugin.</p>
+<dl class="describe">
+<dt>
+<tt class="descname">server:</tt></dt>
+<dd><p><strong>Reqired</strong>
+String: The hostname of the IRC server to connect to.</p>
+<p>Ibid <a class="reference external" href="https://bugs.launchpad.net/bugs/363466">does not currently support</a> falling back to
+alternate servers, so you may want to use a round-robin hostname.</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">port:</tt></dt>
+<dd><p>Number: The port to connect to.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">6667</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">ssl:</tt></dt>
+<dd><p>Boolean: Use SSL-encrypted connection to the network.</p>
+<p>Default: <tt class="xref docutils literal"><span class="pre">False</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">nick:</tt></dt>
+<dd><p>String: The nickname for the bot to use on this network.</p>
+<p>Default: The <tt class="xref docutils literal"><span class="pre">botname</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">modes:</tt></dt>
+<dd><p>String: The IRC modes to set.
+Some servers require bots to set mode <tt class="docutils literal"><span class="pre">B</span></tt>.</p>
+<p>Default: nothing</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">channels:</tt></dt>
+<dd><p>List: Channels to join on connection to the network.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>You must include the leading <tt class="docutils literal"><span class="pre">#</span></tt>, but unless you quote each
+channel, Ibid will see the rest of the config line as a comment.</p>
+<p class="last">So use quotes around each channel name like this: <tt class="docutils literal"><span class="pre">&quot;#ibid&quot;,</span>
+<span class="pre">&quot;#fun&quot;</span></tt></p>
+</div>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">nickserv_password:</tt></dt>
+<dd><p>String: The password identifying your bot to NickServ.
+If set, the bot will respond to authentication requests from
+NickServ.</p>
+<p>Default: Nothing</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">nickserv_mask:</tt></dt>
+<dd><p>String: The NickServ&#8217;s hostmask on this network.
+You can set this to ensure that you don&#8217;t accidentally give your
+NickServ password to an imposter, should the network&#8217;s services
+module go down.</p>
+<p>You can use glob wildcards, i.e. <tt class="docutils literal"><span class="pre">*</span></tt> and <tt class="docutils literal"><span class="pre">?</span></tt>.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">*</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">nickserv_nick:</tt></dt>
+<dd><p>String: The NickServ&#8217;s nickname on this network.
+You probably won&#8217;t need to change it.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">NickServ</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">ping_interval:</tt></dt>
+<dd><p>Number: How many seconds in between each keep-alive PING sent to the
+server.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">60</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">pong_timeout:</tt></dt>
+<dd><p>Number: How long to wait for PONGs before giving up and reconnecting.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">300</span></tt></p>
+</dd></dl>
+
+</div>
+<div class="section" id="jabber-source">
+<h4>Jabber Source<a class="headerlink" href="#jabber-source" title="Permalink to this headline">¶</a></h4>
+<dl class="describe">
+<dt>
+<tt class="descname">jid:</tt></dt>
+<dd><strong>Required</strong>
+String: The jabber ID that the bot will connect with.
+(This looks like an e-mail address)</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">password:</tt></dt>
+<dd><strong>Required</strong>
+String: The password for the supplied JID.</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">rooms:</tt></dt>
+<dd><p>List: MUC chatrooms to join on connection.</p>
+<p>Default: Nothing</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">accept_domains:</tt></dt>
+<dd><p>List: Domains that the bot will accept messages from.
+If this isn&#8217;t set, it&#8217;ll accept messages from anyone.</p>
+<p>Default: Nothing (i.e. no restriction)</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">server:</tt></dt>
+<dd><p>String: The hostname of the server to connect to.</p>
+<p>Default: Determined automatically from the jabber ID.</p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">port:</tt></dt>
+<dd><p>Number: The port to connect to.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">5222</span></tt> or <tt class="docutils literal"><span class="pre">5223</span></tt> if <tt class="xref docutils literal"><span class="pre">ssl</span></tt> is <tt class="xref docutils literal"><span class="pre">True</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">ssl:</tt></dt>
+<dd><p>Boolean: Use old port 5223-style SSL connection instead of
+opportunistic TLS on port 5222.</p>
+<p>Default: <tt class="xref docutils literal"><span class="pre">False</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">nick:</tt></dt>
+<dd><p>String: The nickname for the bot to use on this server when in MUC
+chatrooms.</p>
+<p>Default: The <tt class="xref docutils literal"><span class="pre">botname</span></tt></p>
+</dd></dl>
+
+<dl class="describe">
+<dt>
+<tt class="descname">max_public_message_length:</tt></dt>
+<dd><p>Number: The bot will limit public (i.e. MUC) messages to this length
+(in bytes) to avoid flooding the channel with long messages.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">512</span></tt></p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+<div class="section" id="permissions">
+<span id="id2"></span><h2>Permissions<a class="headerlink" href="#permissions" title="Permalink to this headline">¶</a></h2>
+<p>The following permissions are used in Ibid core:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">accounts</span></tt></dt>
+<dd>Alter user&#8217;s accounts.</dd>
+<dt><tt class="docutils literal"><span class="pre">admin</span></tt></dt>
+<dd>Grant and revoke permissions. Shut down the bot.</dd>
+<dt><tt class="docutils literal"><span class="pre">config</span></tt></dt>
+<dd>Alter configuration values online. (Rewrites the configuration file)</dd>
+<dt><tt class="docutils literal"><span class="pre">core</span></tt></dt>
+<dd>Reload Ibid core components.</dd>
+<dt><tt class="docutils literal"><span class="pre">plugins</span></tt></dt>
+<dd>Load and unload plugins.</dd>
+<dt><tt class="docutils literal"><span class="pre">sources</span></tt></dt>
+<dd>Start and stop sources. Join and leave channels.</dd>
+</dl>
+<p>Other permissions used in plugins:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">chairmeeting</span></tt></dt>
+<dd>Start meeting minute-taking.</dd>
+<dt><tt class="docutils literal"><span class="pre">eval</span></tt></dt>
+<dd>Execute arbitrary Python code.</dd>
+<dt><tt class="docutils literal"><span class="pre">factoid</span></tt></dt>
+<dd>Set factoids and modify factoids that you have set yourself.</dd>
+<dt><tt class="docutils literal"><span class="pre">factoidadmin</span></tt></dt>
+<dd>Delete / modify factoids that you didn&#8217;t set in the first place.</dd>
+<dt><tt class="docutils literal"><span class="pre">feeds</span></tt></dt>
+<dd>Configure RSS/Atom feeds</dd>
+<dt><tt class="docutils literal"><span class="pre">karma</span></tt></dt>
+<dd>Promote or demote karma for things.</dd>
+<dt><tt class="docutils literal"><span class="pre">karmaadmin</span></tt></dt>
+<dd>Delete karma items.</dd>
+<dt><tt class="docutils literal"><span class="pre">recvmemo</span></tt></dt>
+<dd>Receive memos.</dd>
+<dt><tt class="docutils literal"><span class="pre">saydo</span></tt></dt>
+<dd>Use the bot as a puppet.</dd>
+<dt><tt class="docutils literal"><span class="pre">sendmemo</span></tt></dt>
+<dd>Send memos.</dd>
+<dt><tt class="docutils literal"><span class="pre">summon</span></tt></dt>
+<dd>Summon a user via another source.</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Configuration</a><ul>
+<li><a class="reference external" href="#the-botdir">The botdir</a></li>
+<li><a class="reference external" href="#the-configuration-file">The configuration file</a><ul>
+<li><a class="reference external" href="#top-level-options">Top Level Options</a></li>
+<li><a class="reference external" href="#auth">Auth</a></li>
+<li><a class="reference external" href="#sources">Sources</a><ul>
+<li><a class="reference external" href="#irc-source">IRC Source</a></li>
+<li><a class="reference external" href="#jabber-source">Jabber Source</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference external" href="#permissions">Permissions</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="install.html"
+                                  title="previous chapter">Installation</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="plugins.html"
+                                  title="next chapter">Plugins</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/configuration.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugins"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="index.html">Ibid v0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2008-2011, The Ibid Developers.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+    </div>
+  </body>
+</html>

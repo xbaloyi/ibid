@@ -1,14 +1,9 @@
 # Copyright (c) 2009-2011, Michael Gorven, Stefano Rivera
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
-#
-# The indefinite_article function follows an algorithm by Damian Conway
-# as published in CPAN package Lingua-EN-Inflect-1.891 under the GNU GPL
-# (version 1 or later) and Artistic License 1.0.
 
 import codecs
 from gzip import GzipFile
 from htmlentitydefs import name2codepoint
-from locale import getpreferredencoding
 import logging
 import os
 import os.path
@@ -90,7 +85,7 @@ def _cacheable_download(url, cachefile, headers={}, timeout=60):
 
     exists = os.path.isfile(cachefile)
 
-    req = urllib2.Request(iri_to_uri(url))
+    req = urllib2.Request(url_to_bytestring(url))
     for name, value in headers.iteritems():
         req.add_header(name, value)
     if not req.has_header('user-agent'):
@@ -156,7 +151,11 @@ def file_in_path(program):
     return bool(path)
 
 def unicode_output(output, errors="strict"):
-    return unicode(output, getpreferredencoding(), errors)
+    try:
+        encoding = os.getenv("LANG").split(".")[1]
+    except:
+        encoding = "ascii"
+    return unicode(output, encoding, errors)
 
 def ibid_version():
     try:
@@ -200,25 +199,12 @@ def parse_timestamp(timestamp):
 class JSONException(Exception):
     pass
 
-def iri_to_uri(url):
+def url_to_bytestring(url):
     "Expand an IDN hostname and UTF-8 encode the path of a unicode URL"
     parts = list(urlparse(url))
-    username, passwd, host, port = re.match(
-        r'^(?:(.*)(?::(.*))?@)?(.*)(?::(.*))?$', parts[1]).groups()
-    parts[1] = ''
-    if username:
-        parts[1] = quote(username.encode('utf-8'))
-        if passwd:
-            parts[1] += ':' + quote(passwd.encode('utf-8'))
-        parts[1] += '@'
-    if host:
-        if parts[0].lower() in ('http', 'https', 'ftp'):
-            parts[1] += host.encode('idna')
-        else:
-            parts[1] += quote(host.encode('utf-8'))
-    if port:
-        parts[1] += ':' + quote(port.encode('utf-8'))
-
+    host = parts[1].split(':')
+    host[0] = host[0].encode('idna')
+    parts[1] = ':'.join(host)
     parts[2] = quote(parts[2].encode('utf-8'), '/%')
     return urlunparse(parts).encode('utf-8')
 
@@ -257,7 +243,7 @@ def generic_webservice(url, params={}, headers={}):
             params[key] = params[key].encode('utf-8')
 
     if params:
-        url = iri_to_uri(url) + '?' + urlencode(params)
+        url = url_to_bytestring(url) + '?' + urlencode(params)
 
     req = urllib2.Request(url, headers=headers)
     if not req.has_header('user-agent'):
@@ -286,7 +272,7 @@ def human_join(items, separator=u',', conjunction=u'and'):
 
 def plural(count, singular, plural):
     "Return singular or plural depending on count"
-    if abs(count) == 1:
+    if count == 1:
         return singular
     return plural
 
@@ -307,61 +293,12 @@ def get_process_output(command, input=None):
     code = process.wait()
     return output, error, code
 
-def indefinite_article(noun_phrase):
-    # algorithm adapted from CPAN package Lingua-EN-Inflect-1.891 by Damian Conway
-    m = re.search('\w+', noun_phrase, re.UNICODE)
-    if m:
-        word = m.group(0)
-    else:
-        return u'an'
-
-    wordi = word.lower()
-    for anword in ('euler', 'heir', 'honest', 'hono'):
-        if wordi.startswith(anword):
-            return u'an'
-
-    if wordi.startswith('hour') and not wordi.startswith('houri'):
-        return u'an'
-
-    if len(word) == 1:
-        if wordi in 'aedhilmnorsx':
-            return u'an'
-        else:
-            return u'a'
-
-    if re.match(r'(?!FJO|[HLMNS]Y.|RY[EO]|SQU|'
-                  r'(F[LR]?|[HL]|MN?|N|RH?|S[CHKLMNPTVW]?|X(YL)?)[AEIOU])'
-                  r'[FHLMNRSX][A-Z]', word):
-        return u'an'
-
-    for regex in (r'^e[uw]', r'^onc?e\b',
-                    r'^uni([^nmd]|mo)','^u[bcfhjkqrst][aeiou]'):
-        if re.match(regex, wordi):
-            return u'a'
-
-    # original regex was /^U[NK][AIEO]?/ but that matches UK, UN, etc.
-    if re.match('^U[NK][AIEO]', word):
-        return u'a'
-    elif word == word.upper():
-        if wordi[0] in 'aedhilmnorsx':
-            return u'an'
-        else:
-            return u'a'
-
-    if wordi[0] in 'aeiou':
-        return u'an'
-
-    if re.match(r'^y(b[lor]|cl[ea]|fere|gg|p[ios]|rou|tt)', wordi):
-        return u'an'
-    else:
-        return u'a'
-
 def get_country_codes():
     filename = cacheable_download(
             'http://www.iso.org/iso/list-en1-semic-3.txt',
             'lookup/iso-3166-1_list_en.txt')
 
-    f = codecs.open(filename, 'r', 'UTF-8')
+    f = codecs.open(filename, 'r', 'ISO-8859-1')
     countries = {
         u'AC': u'Ascension Island',
         u'UK': u'United Kingdom',
@@ -374,26 +311,17 @@ def get_country_codes():
     started = False
     for line in f:
         line = line.strip()
-        if not started:
-            started = True
-            continue
-        if ';' in line:
+        if started and ';' in line:
             country, code = line.split(u';')
-            country = country.lower()
-            # Hack around http://bugs.python.org/issue7008
-            country = country.title().replace(u"'S", u"'s")
+            if u',' in country:
+                country = u' '.join(reversed(country.split(u',', 1)))
+            country = country.title()
             countries[code] = country
+        elif line == u'':
+            started = True
 
     f.close()
 
     return countries
-
-def identity_name(event, identity):
-    if event.identity == identity.id:
-        return u'you'
-    elif event.source == identity.source:
-        return identity.identity
-    else:
-        return u'%s on %s' % (identity.identity, identity.source)
 
 # vi: set et sta sw=4 ts=4:

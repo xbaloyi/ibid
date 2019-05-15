@@ -4,22 +4,20 @@
 import logging
 import re
 
-from sqlalchemy import Column, Index, CheckConstraint, UniqueConstraint, \
-                       MetaData, __version__ as _sqlalchemy_version
-from sqlalchemy.exc import InvalidRequestError, OperationalError, \
+from sqlalchemy import Column, Index, UniqueConstraint, MetaData, \
+                       __version__ as _sqlalchemy_version
+from sqlalchemy.exceptions import InvalidRequestError, OperationalError, \
                                   ProgrammingError, InternalError
-from sqlalchemy.orm.exc import NoResultFound
+if _sqlalchemy_version < '0.5':
+    NoResultFound = InvalidRequestError
+else:
+    from sqlalchemy.orm.exc import NoResultFound
 
 from ibid.db.types import Integer, IbidUnicodeText, IbidUnicode
 
 from ibid.db import metadata
 
 log = logging.getLogger('ibid.db.versioned_schema')
-
-if _sqlalchemy_version < '0.6':
-    pg_engine = 'postgres'
-else:
-    pg_engine = 'postgresql'
 
 class VersionedSchema(object):
     """For an initial table schema, set
@@ -38,6 +36,7 @@ class VersionedSchema(object):
     definition, it is better style to repeat the Column() specification as the
     column might be altered in a future version.
     """
+    foreign_key_re = re.compile(r'^FOREIGN KEY\(.*?\) (REFERENCES .*)$', re.I)
 
     def __init__(self, table, version):
         self.table = table
@@ -79,7 +78,7 @@ class VersionedSchema(object):
                 self._create_table()
 
                 schema = Schema(unicode(self.table.name), self.version)
-                session.add(schema)
+                session.save_or_update(schema)
                 return
             Schema.__table__ = self._get_reflected_model()
 
@@ -93,7 +92,7 @@ class VersionedSchema(object):
                 self._create_table()
 
                 schema = Schema(unicode(self.table.name), self.version)
-                session.add(schema)
+                session.save_or_update(schema)
 
             elif self.version > schema.version:
                 for version in range(schema.version + 1, self.version + 1):
@@ -105,7 +104,7 @@ class VersionedSchema(object):
                     getattr(self, 'upgrade_%i_to_%i' % (version - 1, version))()
 
                     schema.version = version
-                    session.add(schema)
+                    session.save_or_update(schema)
 
                     self.upgrade_reflected_model = \
                             MetaData(session.bind, reflect=True)
@@ -128,7 +127,7 @@ class VersionedSchema(object):
 
         if session.bind.engine.name == 'sqlite':
             return 'ix_%s_%s' % (self.table.name, col.name)
-        elif session.bind.engine.name == pg_engine:
+        elif session.bind.engine.name == 'postgres':
             return '%s_%s_key' % (self.table.name, col.name)
         elif session.bind.engine.name == 'mysql':
             return col.name
@@ -177,8 +176,6 @@ class VersionedSchema(object):
                     ('constraints', old_constraints),
                     ('indexes', old_indexes)):
                 for constraint in old_list:
-                    if isinstance(constraint, CheckConstraint):
-                        continue
                     if any(True for column in constraint.columns
                             if isinstance(column.type, IbidUnicodeText)):
                         indices.append((
@@ -230,10 +227,8 @@ class VersionedSchema(object):
             sg.traverse_single(constraint)
 
         constraints = []
-        foreign_key_re = re.compile(r'^FOREIGN KEY\(.*?\) (REFERENCES .*)$',
-                                    re.I)
         for constraint in [x.strip() for x in sg.buffer.getvalue().split(',')]:
-            m = foreign_key_re.match(constraint)
+            m = self.foreign_key_re.match(constraint)
             if m:
                 constraints.append(m.group(1))
             else:
@@ -252,7 +247,7 @@ class VersionedSchema(object):
             query = 'ALTER TABLE "%s" ADD %s INDEX "%s" ("%s"(%i));' % (
                     self.table.name, col.unique and 'UNIQUE' or '',
                     self._index_name(col), col.name, col.type.index_length)
-        elif engine == pg_engine:
+        elif engine == 'postgres':
             # SQLAlchemy hangs if it tries to do this, because it forgets the ;
             query = 'CREATE %s INDEX "%s" ON "%s" ("%s")' % (
                     col.unique and 'UNIQUE' or '',self._index_name(col),
@@ -275,7 +270,7 @@ class VersionedSchema(object):
                 return
             raise
         except ProgrammingError, e:
-            if engine == pg_engine and u'already exists' in unicode(e):
+            if engine == 'postgres' and u'already exists' in unicode(e):
                 return
             raise
 
@@ -300,13 +295,21 @@ class VersionedSchema(object):
             raise
 
         except ProgrammingError, e:
-            if engine == pg_engine and u'does not exist' in unicode(e):
+            if engine == 'postgres' and u'does not exist' in unicode(e):
                 return
+            # In SQLAlchemy 0.4, the InternalError below is a ProgrammingError
+            # and can't be executed in the upgrade transaction:
+            if engine == 'postgres' and u'requires' in unicode(e):
+                self.upgrade_session.bind.execute(
+                        'ALTER TABLE "%s" DROP CONSTRAINT "%s"' % (
+                        self.table.name, self._index_name(col)))
+                return
+            raise
 
         # Postgres constraints can be attached to tables and can't be dropped
         # at DB level.
         except InternalError, e:
-            if engine == pg_engine:
+            if engine == 'postgres':
                 self.upgrade_session.execute(
                         'ALTER TABLE "%s" DROP CONSTRAINT "%s"' % (
                         self.table.name, self._index_name(col)))

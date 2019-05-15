@@ -1,15 +1,13 @@
 # Copyright (c) 2008-2010, Michael Gorven
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
-import logging
 from os.path import join
-import re
-
 from twisted.internet import reactor
+import logging
 
 import ibid
 from ibid.utils import human_join
-from ibid.config import FileConfig, Option
+from ibid.config import FileConfig
 from ibid.plugins import Processor, match, authorise, auth_responses
 from ibid.utils import ibid_version
 
@@ -21,19 +19,18 @@ features['plugins'] = {
     'description': u'Lists, loads and unloads plugins.',
     'categories': ('admin',),
 }
-class ListPlugins(Processor):
+class ListPLugins(Processor):
     usage = u'list plugins'
-    features = ('plugins',)
+    feature = ('plugins',)
 
-    @match(r'lsmod|list plugins')
+    @match(r'^lsmod|list\s+plugins$')
     def handler(self, event):
-        event.addresponse(u'Plugins: %s', human_join(sorted(list_plugins())) or u'none')
+        plugins = []
+        for processor in ibid.processors:
+            if processor.name not in plugins:
+                plugins.append(processor.name)
 
-def list_plugins():
-    plugins = set()
-    for processor in ibid.processors:
-        plugins.add(processor.name)
-    return sorted(plugins)
+        event.addresponse(u'Plugins: %s', human_join(sorted(plugins)) or u'none')
 
 features['core'] = {
     'description': u'Reloads core modules.',
@@ -41,12 +38,12 @@ features['core'] = {
 }
 class ReloadCoreModules(Processor):
     usage = u'reload (reloader|dispatcher|databases|auth)'
-    features = ('core',)
+    feature = ('core',)
 
     priority = -5
     permission = u'core'
 
-    @match(r'reload (reloader|dispatcher|databases|auth)')
+    @match(r'^reload\s+(reloader|dispatcher|databases|auth)$')
     @authorise()
     def reload(self, event, module):
         module = module.lower()
@@ -59,18 +56,18 @@ class ReloadCoreModules(Processor):
 
 class LoadModules(Processor):
     usage = u'(load|unload|reload) <plugin|processor>'
-    features = ('plugins',)
+    feature = ('plugins',)
 
     permission = u'plugins'
 
-    @match(r'(?:re)?load {chunk}(?: plugin)?')
+    @match(r'^(?:re)?load\s+(\S+)(?:\s+plugin)?$')
     @authorise()
     def load(self, event, plugin):
         result = ibid.reloader.unload_processor(plugin)
         result = ibid.reloader.load_processor(plugin)
         event.addresponse(result and u'%s reloaded' or u"Couldn't reload %s", plugin)
 
-    @match(r'unload {chunk}')
+    @match(r'^unload\s+(\S+)$')
     @authorise()
     def unload(self, event, plugin):
         result = ibid.reloader.unload_processor(plugin)
@@ -82,11 +79,11 @@ features['die'] = {
 }
 class Die(Processor):
     usage = u'die'
-    features = ('die',)
+    feature = ('die',)
 
     permission = u'admin'
 
-    @match(r'die')
+    @match(r'^die$')
     @authorise()
     def die(self, event):
         reactor.stop()
@@ -98,11 +95,11 @@ features['sources'] = {
 class Admin(Processor):
     usage = u"""(connect|disconnect) (to|from) <source>
     load <source> source"""
-    features = ('sources',)
+    feature = ('sources',)
 
     permission = u'sources'
 
-    @match(r'connect (?:to )?{chunk}')
+    @match(r'^connect\s+(?:to\s+)?(\S+)$')
     @authorise()
     def connect(self, event, source):
         if source not in ibid.sources:
@@ -112,7 +109,7 @@ class Admin(Processor):
         else:
             event.addresponse(u"I couldn't connect to %s", source)
 
-    @match(r'disconnect (?:from )?{chunk}')
+    @match(r'^disconnect\s+(?:from\s+)?(\S+)$')
     @authorise()
     def disconnect(self, event, source):
         if source not in ibid.sources:
@@ -122,7 +119,7 @@ class Admin(Processor):
         else:
             event.addresponse(u"I couldn't disconnect from %s", source)
 
-    @match(r'(?:re)?load {chunk} source')
+    @match(r'^(?:re)?load\s+(\S+)\s+source$')
     @authorise()
     def load(self, event, source):
         if ibid.reloader.load_source(source, ibid.service):
@@ -132,9 +129,9 @@ class Admin(Processor):
 
 class Info(Processor):
     usage = u'(sources|list configured sources)'
-    features = ('sources',)
+    feature = ('sources',)
 
-    @match(r'sources')
+    @match(r'^sources$')
     def list(self, event):
         sources = []
         for name, source in ibid.sources.items():
@@ -142,7 +139,7 @@ class Info(Processor):
             sources.append(url and u'%s (%s)' % (name, url) or name)
         event.addresponse(u'Sources: %s', human_join(sorted(sources)) or u'none')
 
-    @match(r'list configured sources')
+    @match(r'^list\s+configured\s+sources$')
     def listall(self, event):
         event.addresponse(u'Configured sources: %s', human_join(sorted(ibid.config.sources.keys())) or u'none')
 
@@ -152,9 +149,9 @@ features['version'] = {
 }
 class Version(Processor):
     usage = u'version'
-    features = ('version',)
+    feature = ('version',)
 
-    @match(r'version')
+    @match(r'^version$')
     def show_version(self, event):
         if ibid_version():
             event.addresponse(u'I am version %s', ibid_version())
@@ -170,12 +167,12 @@ class Config(Processor):
     usage = u"""reread config
     set config <name> to <value>
     get config <name>"""
-    features = ('config',)
+    feature = ('config',)
 
     priority = -10
     permission = u'config'
 
-    @match(r'reread config')
+    @match(r'^reread\s+config$')
     @authorise()
     def reload(self, event):
         ibid.config.reload()
@@ -185,7 +182,7 @@ class Config(Processor):
         event.addresponse(True)
         log.info(u'Reread configuration file')
 
-    @match(r'(?:set config|config set) (\S+?)(?: to |\s*=\s*)(\S.*?)')
+    @match(r'^(?:set\s+config|config\s+set)\s+(\S+?)(?:\s+to\s+|\s*=\s*)(\S.*?)$')
     @authorise()
     def set(self, event, key, value):
         config = ibid.config
@@ -214,79 +211,17 @@ class Config(Processor):
 
         event.addresponse(True)
 
-    def find_option(self, key):
-        """
-        Find the Option object(s) for a config key in a plugin or source.
-
-        Returns None if the key does not correspond to an Option object.
-
-        Returns a dictionary mapping option names to (option, object) pairs as
-        below, if key is of the form plugins.pluginname or sources.sourcename.
-
-        Otherwise, returns (option, object, key_tail) where option is an
-        Option instance, and object is either a Processor or Source object
-        through which the option is accessed, and key_tail is the part of
-        the key which names a sub-option of this option (or a blank string).
-        """
-        m = re.match(r'^(plugins|sources)\.([^.]+)(?:\.([^.]+)(?:\.(.+))?)?$', key)
-        if m is None:
-            return None
-
-        kind, plugin, name, key_tail = m.groups()
-        if kind == 'sources':
-            if plugin in ibid.sources:
-                things = [ibid.sources[plugin]]
-            else:
-                return None
-        else:
-            things = [p for p in ibid.processors if p.name == plugin]
-
-        if name is None:
-            mapping = {}
-        else:
-            mapping = None
-
-        for thing in things:
-            options = thing.__dict__.values() + \
-                        type(thing).__dict__.values()
-            for option in options:
-                if isinstance(option, Option):
-                    if name is None:
-                        mapping[option.name] = (option, thing)
-                    elif option.name == name:
-                        return option, thing, key_tail or u''
-        return mapping
-
-    @match(r'(?:get config|config get) (\S+?)')
+    @match(r'^(?:get\s+config|config\s+get)\s+(\S+?)$')
     def get(self, event, key):
         if 'password' in key.lower() and not auth_responses(event, u'config'):
             return
 
-        option = self.find_option(key)
-        if isinstance(option, dict):
-            config = option
-            key = ''
-        elif option is not None:
-            config = option[0].__get__(option[1], type(option[1]))
-            key = option[2]
-        elif key == 'plugins':
-            # Construct a dictionary since this isn't a list-valued option,
-            # but a list of option keys.
-            config = dict((plugin, None) for plugin in list_plugins())
-            key = ''
-        elif key == 'sources':
-            config = ibid.sources
-            key = ''
-        else:
-            config = ibid.config
-
-        if key:
-            for part in key.split('.'):
-                if not isinstance(config, dict) or part not in config:
-                    event.addresponse(u'No such option')
-                    return
-                config = config[part]
-
+        config = ibid.config
+        for part in key.split('.'):
+            if not isinstance(config, dict) or part not in config:
+                event.addresponse(u'No such option')
+                return
+            config = config[part]
         if isinstance(config, list):
             event.addresponse(u', '.join(config))
         elif isinstance(config, dict):

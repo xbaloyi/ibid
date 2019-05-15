@@ -27,7 +27,7 @@ features['fortune'] = {
 }
 class Fortune(Processor, RPC):
     usage = u'fortune'
-    features = ('fortune',)
+    feature = ('fortune',)
 
     fortune = Option('fortune', 'Path of the fortune executable', 'fortune')
 
@@ -66,11 +66,11 @@ features['bash'] = {
 class Bash(Processor):
     usage = u'bash[.org] [(random|<number>)]'
 
-    features = ('bash',)
+    feature = ('bash',)
 
     public_browse = BoolOption('public_browse', 'Allow random quotes in public', True)
 
-    @match(r'^bash(?:\.org)?(?:\s+#?(random|\d+))?$')
+    @match(r'^bash(?:\.org)?(?:\s+(random|\d+))?$')
     def bash(self, event, id):
         id = id is None and u'random' or id.lower()
 
@@ -103,7 +103,7 @@ class FMLException(Exception):
 class FMyLife(Processor):
     usage = u'fml (<number> | [random] | flop | top | last | love | money | kids | work | health | sex | miscellaneous )'
 
-    features = ('fml',)
+    feature = ('fml',)
 
     api_url = Option('fml_api_url', 'FML API URL base', 'http://api.betacie.com/')
     # The Ibid API Key, registered by Stefano Rivera:
@@ -173,7 +173,7 @@ class TextsFromLastNight(Processor):
     usage = u"""tfln [(random|<number>)]
     tfln (worst|best) [(today|this week|this month)]"""
 
-    features = ('tfln',)
+    feature = ('tfln',)
 
     public_browse = BoolOption('public_browse', 'Allow random quotes in public', True)
 
@@ -252,7 +252,7 @@ class MyLifeIsAverage(Processor):
     usage = (u"mlia [(<number> | random | recent | today | yesterday | "
              u"this week | this month | this year )]")
 
-    features = ('mlia',)
+    feature = ('mlia',)
 
     public_browse = BoolOption('public_browse',
                                'Allow random quotes in public', True)
@@ -336,12 +336,14 @@ class Bible(Processor):
     usage = u"""bible <passages> [in <version>]
     <book> <verses> [in <version>]"""
 
-    features = ('bible',)
+    feature = ('bible',)
     # http://labs.bible.org/api/ is an alternative
     # Their feature set is a little different, but they should be fairly
     # compatible
     api_url = Option('bible_api_url', 'Bible API URL base',
                     'http://api.preachingcentral.com/bible.php')
+
+    psalm_pat = re.compile(r'\bpsalm\b', re.IGNORECASE)
 
     # The API doesn't seem to work with the apocrypha, even when looking in
     # versions that include it
@@ -361,8 +363,7 @@ class Bible(Processor):
 
     @match(r'^bible\s+(.*?)(?:\s+(?:in|from)\s+(.*))?$')
     def bible(self, event, passage, version=None):
-        psalm_pat = re.compile(r'\bpsalm\b', re.IGNORECASE)
-        passage = psalm_pat.sub('psalms', passage)
+        passage = self.psalm_pat.sub('psalms', passage)
 
         params = {'passage': passage.encode('utf-8'),
                   'type': 'xml',
@@ -410,36 +411,5 @@ class Bible(Processor):
         book, chapter, verse, text = map(xml.findtext,
                                         ('bookname', 'chapter', 'verse', 'text'))
         return ((book, chapter, verse), text)
-
-
-features['dinner'] = {
-    'description': u'Retrieves a random recipe',
-    'categories': ('web', 'fun'),
-}
-class Dinner(Processor):
-    usage = u"""what should I have for [vegetarian] (lunch|supper|dinner)"""
-    features = ('dinner',)
-
-    @match(r'(?:(?:what the fuck|wtf|what) should {any} (?:make|have|eat) for )'
-            r'?(veg\S* )?(?:dinner|lunch|supper)')
-    def dinner (self, event, who, veg):
-        url = 'http://www.whatthefuckshouldimakefordinner.com/'
-        if veg:
-            url += 'veg.php'
-
-        soup = get_html_parse_tree(url, headers={'Cache-Control': 'max-age=0'})
-        link = soup.find('a')
-        recipe = u''.join(link.contents)
-
-        if ('fuck' in event.message['raw'].lower() or
-                'wtf' in event.message['raw'].lower()):
-            template = u"Try some fucking %(recipe)s. If you're too thick " \
-                       u"to work it out for yourself, there's a recipe at " \
-                       u"%(link)s"
-        else:
-            template = u"Try some %(recipe)s. If you can't " \
-                       u"work it out for yourself, there's a recipe at " \
-                       u"%(link)s"
-        event.addresponse(template, {'recipe': recipe, 'link': link['href']})
 
 # vi: set et sta sw=4 ts=4:

@@ -13,12 +13,13 @@ install_requires=[
     'feedparser',
     'html2text',
     'html5lib',
-    'jinja2',
+    'jinja',
+    'pyopenssl',
     'PyStemmer',
     'python-dateutil',
     'SOAPpy',
-    'SQLAlchemy>=0.6',
-    'Twisted[tls]',
+    'SQLAlchemy>=0.5,<0.6a', # Works with >=0.4.6 except on OS X
+    'Twisted',
     'wokkel>=0.6.3',
 ]
 
@@ -34,7 +35,7 @@ if argv[1:] == ['install', '--no-dependencies']:
 
 setup(
     name='Ibid',
-    version='0.2.0dev',
+    version='0.1.1',
     description='Multi-protocol general purpose chat bot',
     url='http://ibid.omnia.za.net/',
     keywords='chat bot irc jabber twisted messaging',
@@ -48,6 +49,10 @@ setup(
         'memory': ['objgraph'],
         'asciiart': ['python-aalib'],
     },
+    dependency_links=[
+        'http://ibid.omnia.za.net/eggs/',
+        'http://wokkel.ik.nu/downloads',
+    ],
     packages=['ibid', 'tracibid', 'twisted', 'contrib', 'factpacks'],
     entry_points={
         'trac.plugins': ['tracibid = tracibid.notifier'],
@@ -64,7 +69,6 @@ setup(
         'scripts/ibid-setup',
         'scripts/ibid.tac',
     ],
-    test_suite='ibid.test.run',
 
     include_package_data=True,
     zip_safe=False,
