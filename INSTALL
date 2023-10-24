@@ -22,12 +22,12 @@ Debian: Add the Ibid repo to your APT sources:
 # aptitude update
 
 Install required modules:
-# aptitude install python-beautifulsoup \
-	python-dateutil python-dnspython python-feedparser \
-	python-html2text python-html5lib python-imdbpy \
-	python-jinja python-silc python-setuptools \
-	python-simplejson python-soappy python-sqlalchemy \
-	python-twisted python-wokkel
+# aptitude install python3-beautifulsoup4 \
+	python3-dateutil python3-dnspython python3-feedparser \
+	python3-html2text python3-html5lib python3-imdbpy \
+	python3-jinja python3-silc python3-setuptools \
+	python3-simplejson python3-soappy python3-sqlalchemy \
+	python3-twisted python3-wokkel
 
 Install into a virtualenv or your system:
 $ ./setup.py install --no-dependencies

@@ -103,7 +103,7 @@ MySQL
 
 Install MySQL. On Debian/Ubuntu::
 
-   user@box $ sudo aptitude install mysql-server python-mysqldb
+   user@box $ sudo aptitude install mysql-server python3-mysqldb
 
 You'll be prompted to set a root password for your server. You should
 probably do that.
@@ -261,10 +261,10 @@ You can use another DB, but we default to SQLite.
 If you are not using Debian/Ubuntu or would prefer to have these
 dependencies installed in a virtualenv, you can skip this step::
 
-   user@box $ sudo aptitude install bzr python-configobj python-sqlalchemy \
-     python-twisted python-beautifulsoup python-celementtree \
-     python-html5lib python-setuptools python-simplejson \
-     python-soappy python-jinja python-dateutil python-virtualenv
+   user@box $ sudo aptitude install bzr python3-configobj python3-sqlalchemy \
+     python3-twisted python3-beautifulsoup4 python3-celementtree \
+     python3-html5lib python3-setuptools python3-simplejson \
+     python3-soappy python3-jinja python3-dateutil python3-virtualenv
 
 Create a user to run your bot as::
 

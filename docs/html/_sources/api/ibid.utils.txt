@@ -184,13 +184,13 @@ Web Service Functions
    :synopsis: HTML Parsing helper functions for plugins
 .. moduleauthor:: Ibid Core Developers
 
-.. function:: get_html_parse_tree(url, [data, headers, treetype='beautifulsoup])
+.. function:: get_html_parse_tree(url, [data, headers, treetype='beautifulsoup4])
 
    Request *url*, and return a parse-tree of type *treetype*.
    *data* and *headers* are optionally used in the request.
 
    *treetype* can be any type supported by :mod:`html5lib`, most
-   commonly ``'etree'`` or ``'beautifulsoup'``.
+   commonly ``'etree'`` or ``'beautifulsoup4'``.
 
    :exc:`ContentTypeException` will be raised if the returned data isn't
    HTML.
