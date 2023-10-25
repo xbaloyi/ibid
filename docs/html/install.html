@@ -98,7 +98,7 @@ only develop and test heavily on Debian and Ubuntu Linux.</p>
 <ul class="simple">
 <li><a class="reference external" href="http://effbot.org/zone/element-index.htm">ElementTree</a> (only needed for Python 2.4)</li>
 <li><a class="reference external" href="http://code.google.com/p/html5lib/">html5lib</a></li>
-<li><a class="reference external" href="http://www.crummy.com/software/BeautifulSoup/">BeautifulSoup</a></li>
+<li><a class="reference external" href="http://www.crummy.com/software/BeautifulSoup/">BeautifulSoup4</a></li>
 <li><a class="reference external" href="http://code.google.com/p/simplejson/">SimpleJSON</a> (only needed for Python &lt; 2.6)</li>
 </ul>
 <p>Web source and web services:</p>
@@ -284,10 +284,10 @@ If you use something else, you&#8217;ll have to interpolate.</p>
 You can use another DB, but we default to SQLite.
 If you are not using Debian/Ubuntu or would prefer to have these
 dependencies installed in a virtualenv, you can skip this step:</p>
-<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo aptitude install bzr python-configobj python-sqlalchemy \
-  python-twisted python-beautifulsoup python-celementtree \
-  python-html5lib python-setuptools python-simplejson \
-  python-soappy python-jinja python-dateutil python-virtualenv
+<div class="highlight-text"><div class="highlight"><pre>user@box $ sudo aptitude install bzr python3-configobj python3-sqlalchemy \
+  python3-twisted python3-beautifulsoup4 python3-celementtree \
+  python3-html5lib python3-setuptools python3-simplejson \
+  python3-soappy python3-jinja python3-dateutil python3-virtualenv
 </pre></div>
 </div>
 <p>Create a user to run your bot as:</p>

@@ -60,7 +60,7 @@ Many core plugins require the following Web scraping & parsing libraries:
 
 * `ElementTree <http://effbot.org/zone/element-index.htm>`_ (only needed for Python 2.4)
 * `html5lib <http://code.google.com/p/html5lib/>`_
-* `BeautifulSoup <http://www.crummy.com/software/BeautifulSoup/>`_
+* `BeautifulSoup4 <http://www.crummy.com/software/BeautifulSoup/>`_
 * `SimpleJSON <http://code.google.com/p/simplejson/>`_ (only needed for Python < 2.6)
 
 Web source and web services:
@@ -261,10 +261,10 @@ You can use another DB, but we default to SQLite.
 If you are not using Debian/Ubuntu or would prefer to have these
 dependencies installed in a virtualenv, you can skip this step::
 
-   user@box $ sudo aptitude install bzr python-configobj python-sqlalchemy \
-     python-twisted python-beautifulsoup python-celementtree \
-     python-html5lib python-setuptools python-simplejson \
-     python-soappy python-jinja python-dateutil python-virtualenv
+   user@box $ sudo aptitude install bzr python3-configobj python3-sqlalchemy \
+     python3-twisted python3-beautifulsoup python3-celementtree \
+     python3-html5lib python3-setuptools python3-simplejson \
+     python3-soappy python3-jinja python3-dateutil python3-virtualenv
 
 Create a user to run your bot as::
 

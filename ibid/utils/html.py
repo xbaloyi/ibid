@@ -4,12 +4,12 @@
 import cgi
 import inspect
 import zlib
-import urllib2
+import urllib3
 from gzip import GzipFile
-from StringIO import StringIO
+from io import StringIO
 
 from html5lib import HTMLParser, treebuilders
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 from ibid.compat import ElementTree
 from ibid.utils import url_to_bytestring
@@ -20,8 +20,8 @@ class ContentTypeException(Exception):
 def get_html_parse_tree(url, data=None, headers={}, treetype='beautifulsoup'):
     "Request a URL, parse with html5lib, and return a parse tree from it"
 
-    req = urllib2.Request(url_to_bytestring(url), data, headers)
-    f = urllib2.urlopen(req)
+    req = urllib3.Request(url_to_bytestring(url), data, headers)
+    f = urllib3.urlopen(req)
 
     if f.info().gettype() not in ('text/html', 'application/xhtml+xml'):
         f.close()
