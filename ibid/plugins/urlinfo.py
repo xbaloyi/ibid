@@ -7,7 +7,7 @@
 
 from cgi import parse_qs
 from urllib import urlencode
-from urllib2 import urlopen, build_opener, HTTPError, HTTPRedirectHandler
+from urllib import urlopen, build_opener, HTTPError, HTTPRedirectHandler
 import logging
 import re
 

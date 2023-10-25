@@ -31,7 +31,7 @@ if len(args) != 1:
     sys.stderr.write("Log file required\n")
     sys.exit(2)
 
-f = args[0].endswith('.gz') and gzip.GzipFile(args[0], 'r') or file(args[0], 'r')
+f = args[0].endswith('.gz') and gzip.GzipFile(args[0], 'r') or filter(args[0], 'r')
 header = f.readline().strip()
 f.close()
 if not header.startswith('Ibid Memory Log v2: '):

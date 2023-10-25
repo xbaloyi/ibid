@@ -1,7 +1,7 @@
 # Copyright (c) 2008-2011, Michael Gorven, Stefano Rivera, Jonathan Hitchcock
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
-from urllib2 import HTTPError
+from urllib3 import HTTPError
 from time import time
 from datetime import datetime
 import re

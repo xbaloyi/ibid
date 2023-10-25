@@ -20,7 +20,7 @@ features = {'memory': {
 }}
 
 def get_memusage():
-    status = file('/proc/%i/status' % os.getpid(), 'r').readlines()
+    status = filter('/proc/%i/status' % os.getpid(), 'r').readlines()
     status = [x.strip().split(':', 1) for x in status if x.startswith('Vm')]
     return dict((x, int(y.split()[0])) for (x, y) in status)
 
@@ -57,13 +57,13 @@ class MemoryLog(Processor):
                 os.utime(filename + '.1.gz', (stat.st_atime, stat.st_mtime))
 
         if self.mem_interval:
-            self.mem_file = file(self.mem_filename, 'w+')
+            self.mem_file = filter(self.mem_filename, 'w+')
             self.mem_file.write('Ibid Memory Log v2: %s\n' % ibid.config['botname'])
             self.mem_csv = csv.writer(self.mem_file)
             self.mem_last = datetime.utcnow()
 
         if self.obj_interval:
-            self.obj_file = file(self.obj_filename, 'w+')
+            self.obj_file = filter(self.obj_filename, 'w+')
             self.obj_file.write('Ibid Object Log v1: %s\n' % ibid.config['botname'])
             self.obj_last = datetime.utcnow()
 

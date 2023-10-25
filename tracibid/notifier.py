@@ -2,7 +2,7 @@
 # Released under terms of the MIT/X/Expat Licence. See COPYING for details.
 
 from urllib import urlencode
-from urllib2 import urlopen
+from urllib3 import urlopen
 from threading import Timer
 try:
     from simplejson import dumps

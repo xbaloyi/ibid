@@ -38,7 +38,7 @@ if options.examine is None and len(args) < 2:
     sys.stderr.write("At least one type required\n")
     sys.exit(2)
 
-f = args[0].endswith('.gz') and gzip.GzipFile(args[0], 'r') or file(args[0], 'r')
+f = args[0].endswith('.gz') and gzip.GzipFile(args[0], 'r') or filter(args[0], 'r')
 header = f.readline().strip()
 
 if not header.startswith('Ibid Object Log v1: '):

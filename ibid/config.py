@@ -17,7 +17,7 @@ def monkeypatch(self, name):
 ConfigObj.__getattr__ = monkeypatch
 
 def FileConfig(filename):
-    spec = file(locate_resource('ibid', 'configspec.ini'), 'r')
+    spec = filter(locate_resource('ibid', 'configspec.ini'), 'r')
     configspec = ConfigObj(spec, list_values=False, encoding='utf-8')
     config = ConfigObj(filename, configspec=configspec, interpolation='Template', encoding='utf-8')
     config.validate(Validator())

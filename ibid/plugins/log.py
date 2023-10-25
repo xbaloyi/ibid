@@ -103,7 +103,7 @@ class Log(Processor):
             if log is None:
                 try:
                     makedirs(dirname(filename), int(self.dir_mode, 8))
-                except OSError, e:
+                except OSError as e:
                     if e.errno != EEXIST:
                         raise e
 

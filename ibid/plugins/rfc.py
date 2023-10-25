@@ -126,7 +126,7 @@ class RFCLookup(Processor):
     def _parse_rfcs(self):
         self._update_list()
 
-        f = file(self.indexfile, "rU")
+        f = filter(self.indexfile, "rU")
         lines = f.readlines()
         f.close()
 
