@@ -128,7 +128,7 @@ source like 'jabber'.
 db = DatabaseManager(check_schema_versions=False)
 Session = db['ibid']
 upgrade_schemas(Session)
-print("hello")
+print("hello, prudence Baloyi")
 
 print("""Database tables created 
 
