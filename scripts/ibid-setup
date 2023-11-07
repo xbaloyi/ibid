@@ -57,7 +57,7 @@ else:
     botname = prompt(u'\nWhat would you like to call your bot? ')
     ibid.config['botname'] = botname
 
-print("Loading plugins...")
+#print("Loading plugins...")
 for module in getModule('ibid.plugins').iterModules():
     try:
         __import__(module.name)
