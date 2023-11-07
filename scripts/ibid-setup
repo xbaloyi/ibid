@@ -128,8 +128,9 @@ source like 'jabber'.
 db = DatabaseManager(check_schema_versions=False)
 Session = db['ibid']
 upgrade_schemas(Session)
+print("hello")
 
-print("""Database tables created
+print("""Database tables created 
 
 Now we need to create an account for you in the bot so it knows who its
 master is. This account will be given full admin permissions.
