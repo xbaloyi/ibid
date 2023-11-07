@@ -57,29 +57,29 @@ else:
     botname = prompt(u'\nWhat would you like to call your bot? ')
     ibid.config['botname'] = botname
 
-print u'Loading plugins...'
+print ("Loading plugins...")
 for module in getModule('ibid.plugins').iterModules():
     try:
         __import__(module.name)
-    except Exception, e:
+    except Exception as e:
         if options.verbose:
             print >> stderr, u"Couldn't load %s plugin: %s" % (
                     module.name.replace('ibid.plugins.', ''), unicode(e))
 
 if not exists('ibid.ini'):
-    print u"""
+    print ("""
 Database configuration:
 If you want to use the default SQLite database, just press Enter.
 Otherwise please enter a SQLAlchemy database URL.
 Supported databases:
 * mysql://user:pass@host/database
 * postgres://user:pass@host/database (load the CITEXT contrib module first)
-* sqlite:///filename"""
+* sqlite:///filename""")
     ibid.config.databases['ibid'] = prompt(
             u'Database URL [Default: sqlite:///ibid.db]: '
         ) or 'sqlite:///ibid.db'
 
-    print u"""
+    print ("""
 Source configuration:
 Your bot needs to connect to an IM service (in Ibid terminology, a source) like
 an IRC server or jabber account. Please enter the details for the primary
@@ -89,7 +89,7 @@ other sources manually in ibid.ini.
 
 The source name should be the IRC network name or a generic description for the
 source like 'jabber'.
-"""
+""")
     source = {'nick': '$botname'}
     sname = prompt(u'Source name (e.g. freenode, jabber): ')
     type_ = prompt(u'Source type (irc, jabber) [Default: irc]: ')
@@ -115,7 +115,7 @@ source like 'jabber'.
             source['rooms'] = [r.strip() for r in rooms.split(u',')]
         source['auth'] = ['implicit']
     else:
-        print u'Invalid source type.'
+        print ('Invalid source type.')
         exit(1)
 
     ibid.config.sources[sname] = source
@@ -129,21 +129,21 @@ db = DatabaseManager(check_schema_versions=False)
 Session = db['ibid']
 upgrade_schemas(Session)
 
-print u"""Database tables created
+print ("""Database tables created
 
 Now we need to create an account for you in the bot so it knows who its
 master is. This account will be given full admin permissions.
-Please enter the details for your account."""
+Please enter the details for your account.""")
 identity = prompt(u'Your IRC Nick/Jabber ID: ')
 if not identity:
-    print u'Skipping account creation'
+    print ('Skipping account creation')
     exit(0)
 source = sname or prompt(u'Source name: ')
 pass1 = prompt(u'Password to identify yourself to the bot: ', secret=True)
 pass2 = prompt(u'Confirm password: ', secret=True)
 
 if pass1 != pass2:
-    print u'Password do not match'
+    print ('Password do not match')
     exit(1)
 
 session = Session()
@@ -165,6 +165,6 @@ session.save_or_update(identity)
 session.commit()
 session.close()
 
-print u'Account created with admin permissions'
+print ('Account created with admin permissions')
 
 # vi: set et sta sw=4 ts=4:
