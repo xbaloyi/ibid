@@ -57,7 +57,7 @@ else:
     botname = prompt(u'\nWhat would you like to call your bot? ')
     ibid.config['botname'] = botname
 
-print ("Loading plugins...")
+print("Loading plugins...")
 for module in getModule('ibid.plugins').iterModules():
     try:
         __import__(module.name)
@@ -67,7 +67,7 @@ for module in getModule('ibid.plugins').iterModules():
                     module.name.replace('ibid.plugins.', ''), unicode(e))
 
 if not exists('ibid.ini'):
-    print ("""
+    print("""
 Database configuration:
 If you want to use the default SQLite database, just press Enter.
 Otherwise please enter a SQLAlchemy database URL.
@@ -79,7 +79,7 @@ Supported databases:
             u'Database URL [Default: sqlite:///ibid.db]: '
         ) or 'sqlite:///ibid.db'
 
-    print ("""
+    print("""
 Source configuration:
 Your bot needs to connect to an IM service (in Ibid terminology, a source) like
 an IRC server or jabber account. Please enter the details for the primary
@@ -129,21 +129,21 @@ db = DatabaseManager(check_schema_versions=False)
 Session = db['ibid']
 upgrade_schemas(Session)
 
-print ("""Database tables created
+print("""Database tables created
 
 Now we need to create an account for you in the bot so it knows who its
 master is. This account will be given full admin permissions.
 Please enter the details for your account.""")
 identity = prompt(u'Your IRC Nick/Jabber ID: ')
 if not identity:
-    print ('Skipping account creation')
+    print('Skipping account creation')
     exit(0)
 source = sname or prompt(u'Source name: ')
 pass1 = prompt(u'Password to identify yourself to the bot: ', secret=True)
 pass2 = prompt(u'Confirm password: ', secret=True)
 
 if pass1 != pass2:
-    print ('Password do not match')
+    print('Password do not match')
     exit(1)
 
 session = Session()
