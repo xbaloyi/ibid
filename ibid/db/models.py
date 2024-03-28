@@ -15,7 +15,7 @@ class Schema(Base):
         Column('table', IbidUnicode(32), unique=True, nullable=False,
                index=True),
         Column('version', Integer, nullable=False),
-        useexisting=True)
+        extend_existing=True)
 
     class SchemaSchema(VersionedSchema):
         def upgrade_1_to_2(self):
