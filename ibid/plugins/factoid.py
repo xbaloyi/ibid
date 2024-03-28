@@ -12,7 +12,7 @@ from ibid.plugins import Processor, match, handler, authorise, auth_responses, \
                          RPC
 from ibid.config import Option, IntOption, ListOption
 from ibid.db import IbidUnicode, IbidUnicodeText, Boolean, Integer, DateTime, \
-                    Table, Column, ForeignKey, PassiveDefault, \
+                    Table, Column, ForeignKey, server_default, \
                     relation, synonym, func, or_, \
                     Base, VersionedSchema, \
                     get_regexp_op
@@ -76,7 +76,7 @@ class FactoidName(Base):
             self.alter_column(Column('name', IbidUnicodeText(32), key='_name',
                                      nullable=False, unique=True, index=True))
         def upgrade_6_to_7(self):
-            self.add_column(Column('wild', Boolean, PassiveDefault('0'),
+            self.add_column(Column('wild', Boolean, server_default('0'),
                                    nullable=False, index=True, default=False))
             for row in self.upgrade_session.query(FactoidName) \
                     .filter(FactoidName.name.like('%#_#%%', escape='#')) \
