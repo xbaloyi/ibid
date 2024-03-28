@@ -45,7 +45,7 @@ class Identity(Base):
                nullable=False, index=True),
         Column('created', DateTime),
         UniqueConstraint('source', 'identity'),
-        useexisting=True)
+        extend_existing=True)
 
     class IdentitySchema(VersionedSchema):
         def upgrade_1_to_2(self):
@@ -92,7 +92,7 @@ class Attribute(Base):
                nullable=False, index=True),
         Column('value', IbidUnicodeText, nullable=False),
         UniqueConstraint('account_id', 'name'),
-        useexisting=True)
+        extend_existing=True)
 
     class AttributeSchema(VersionedSchema):
         def upgrade_1_to_2(self):
@@ -128,7 +128,7 @@ class Credential(Base):
         Column('method', IbidUnicode(16, case_insensitive=True),
                nullable=False, index=True),
         Column('credential', IbidUnicodeText, nullable=False),
-        useexisting=True)
+        extend_existing=True)
 
     class CredentialSchema(VersionedSchema):
         def upgrade_1_to_2(self):
@@ -171,7 +171,7 @@ class Permission(Base):
                nullable=False, index=True),
         Column('value', IbidUnicode(4, case_insensitive=True), nullable=False),
         UniqueConstraint('account_id', 'name'),
-        useexisting=True)
+        extend_existing=True)
 
     class PermissionSchema(VersionedSchema):
         def upgrade_1_to_2(self):
@@ -199,7 +199,7 @@ class Account(Base):
         Column('id', Integer, primary_key=True),
         Column('username', IbidUnicode(32, case_insensitive=True),
                unique=True, nullable=False, index=True),
-        useexisting=True)
+        extend_existing=True)
 
     class AccountSchema(VersionedSchema):
         def upgrade_1_to_2(self):
